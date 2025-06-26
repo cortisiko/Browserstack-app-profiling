@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Profiling the various Lists" timestamp="2025-06-26T17:39:08" time="31.026" tests="2" failures="2" errors="2" skipped="0">
+    <properties>
+      <property name="specId" value="0"/>
+      <property name="featureName" value="Profiling the various Lists"/>
+      <property name="capabilities" value="r5cw80jwwsy.android.13"/>
+      <property name="featureFile" value="./wdio/features/Performance/fixtures.feature"/>
+    </properties>
+    <testcase classname="CucumberJUnitReport-13_0.Profiling the various Lists" name="Profile the account list after importing multiple SRPs" time="15.562">
+      <failure/>
+      <error message="Step &quot;I collect app profiling data at test end&quot; is not defined. You can ignore this error by setting cucumberOpts.ignoreUndefinedDefinitions as true."/>
+      <system-out><![CDATA[
+✅ Given I start the fixture server with login state❗ When I fill my password in the Login screen⚠️ And The timer starts running after I tap the login button
+⚠️ Given I am on the wallet screen
+⚠️ And I tap on the Identicon
+⚠️ Then I am on the "Account 1" account
+⚠️ And I tap on button with text "Add account or hardware wallet"
+⚠️ And I tap on button with text "Secret Recovery Phrase"
+⚠️ And I type in my SRP
+⚠️ And I tap on button with text "Import Secret Recovery Phrase"
+⚠️ And I tap on button with text "Continue"
+⚠️ And I tap on the Identicon
+⚠️ And I tap on button with text "Account 7"
+⚠️ And I tap on the Identicon
+❗ And I collect app profiling data at test end
+
+]]></system-out>
+      <system-err><![CDATA[
+Step "I collect app profiling data at test end" is not defined. You can ignore this error by setting cucumberOpts.ignoreUndefinedDefinitions as true.
+	at Feature(/Users/curtisdavid/Documents/GitHub/metamask-mobile/wdio/features/Performance/fixtures.feature):1:1
+	at Scenario(Profile the account list after importing multiple SRPs):13:3
+	at Step(I collect app profiling data at test end):25:5
+
+]]></system-err>
+    </testcase>
+    <testcase classname="CucumberJUnitReport-13_0.Profiling the various Lists" name="Profile network list" time="15.448">
+      <failure/>
+      <error message="Error: element (&quot;//*[@resource-id='login']&quot;) still not displayed after 10000ms"/>
+      <system-out><![CDATA[
+✅ Given I start the fixture server with login state❗ When I fill my password in the Login screen⚠️ And The timer starts running after I tap the login button
+⚠️ And I am on the wallet view
+⚠️ And I tap on the Identicon
+⚠️ Then I am on the "Account 1" account
+⚠️ And I tap on button with text "Add account or hardware wallet"
+⚠️ And I tap on button with text "Secret Recovery Phrase"
+⚠️ And I type in my SRP
+⚠️ And I tap on button with text "Import Secret Recovery Phrase"
+⚠️ And I tap on button with text "Continue"
+⚠️ And I tap on the Identicon
+⚠️ And I tap on button with text "Account 8"
+⚠️ And I tap on the networks filter
+⚠️ And I filter by popular networks
+⚠️ And I tap on the Identicon
+⚠️ And I tap on button with text "Account 9"
+]]></system-out>
+      <system-err><![CDATA[
+Error: element ("//*[@resource-id='login']") still not displayed after 10000ms
+    at async LoginScreen.waitForScreenToDisplay (/Users/curtisdavid/Documents/GitHub/metamask-mobile/wdio/screen-objects/LoginScreen.js:37:5)
+    at async World.<anonymous> (/Users/curtisdavid/Documents/GitHub/metamask-mobile/wdio/step-definitions/common-steps.js:204:3)
+]]></system-err>
+    </testcase>
+  </testsuite>
+</testsuites>

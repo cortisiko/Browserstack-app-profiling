@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="1" failures="1" errors="0" time="257.747">
+  <testsuite name="WalletPlatform: Account List Load Testing" errors="0" failures="1" skipped="0" timestamp="2025-06-26T00:56:28" time="257.692" tests="1">
+    <testcase classname="WalletPlatform: Account List Load Testing render account list efficiently with multiple accounts and networks" name="WalletPlatform: Account List Load Testing render account list efficiently with multiple accounts and networks" time="250.678">
+      <failure>Error: thrown: &quot;Exceeded timeout of 250000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+    at it (/Users/curtisdavid/Documents/GitHub/metamask-mobile/e2e/specs/performance/render-account-list.spec.ts:16:3)
+    at _dispatchDescribe (/Users/curtisdavid/Documents/GitHub/metamask-mobile/node_modules/jest-circus/build/index.js:91:26)
+    at describe (/Users/curtisdavid/Documents/GitHub/metamask-mobile/node_modules/jest-circus/build/index.js:55:5)
+    at Object.describe (/Users/curtisdavid/Documents/GitHub/metamask-mobile/e2e/specs/performance/render-account-list.spec.ts:10:1)
+    at Runtime._execModule (/Users/curtisdavid/Documents/GitHub/metamask-mobile/node_modules/jest-runtime/build/index.js:1439:24)
+    at Runtime._loadModule (/Users/curtisdavid/Documents/GitHub/metamask-mobile/node_modules/jest-runtime/build/index.js:1022:12)
+    at Runtime.requireModule (/Users/curtisdavid/Documents/GitHub/metamask-mobile/node_modules/jest-runtime/build/index.js:882:12)
+    at jestAdapter (/Users/curtisdavid/Documents/GitHub/metamask-mobile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:77:13)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at runTestInternal (/Users/curtisdavid/Documents/GitHub/metamask-mobile/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/Users/curtisdavid/Documents/GitHub/metamask-mobile/node_modules/jest-runner/build/runTest.js:444:34)</failure>
+    </testcase>
+  </testsuite>
+</testsuites>
