@@ -43,7 +43,9 @@
     "version": "v0.3.0"
   },
   "dependencies": {
+    "@viem/anvil": "^0.0.10",
     "detox": "^20.39.0",
+    "viem": "^2.31.4",
     "webdriverio": "^9.16.2"
   },
   "devDependencies": {
