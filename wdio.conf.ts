@@ -3,7 +3,7 @@ import { removeSync } from 'fs-extra';
 import type { Options } from '@wdio/types';
 
 dotenv.config({ path: '.e2e.env' });
-
+ 
 // Import your utilities
 import generateTestReports from './wdio/utils/generateTestReports.js';
 import { gasApiDown, cleanAllMocks } from './wdio/utils/mocks.js';
