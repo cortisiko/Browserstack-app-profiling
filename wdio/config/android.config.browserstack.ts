@@ -34,7 +34,8 @@ const defaultCapabilities = [
     'appium:app': 'bs://4b2a122dc8eafe801a765875b94952cbf52a342e',
     'bstack:options' : {
         "appProfiling" : "true",
-        "local": "true",  
+        "local": "true",
+        "localIdentifier": process.env.GITHUB_RUN_ID,
     }
   }
 ];
@@ -54,6 +55,7 @@ const upgradeCapabilities = [
       "appProfiling" : "true",
       "local": "true",
       "debug": true,
+      "localIdentifier": process.env.GITHUB_RUN_ID,
       "midSessionInstallApps" : [process.env.BROWSERSTACK_ANDROID_APP_URL]
   },
   },
@@ -109,7 +111,8 @@ config.services = [
     {
       accessibility: false,
       buildIdentifier: 'metamask-mobile-tests',
-      browserstackLocal: true,
+      browserstackLocal: false,
+      localIdentifier: process.env.GITHUB_RUN_ID,
     }
   ]
 ];

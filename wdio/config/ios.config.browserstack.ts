@@ -26,6 +26,7 @@ const defaultCapabilities = [
   "bstack:options": {
     "appProfiling": "true",
     "local": "true",
+    "localIdentifier": process.env.GITHUB_RUN_ID,
     "interactiveDebugging": true,
     "buildName": "iOS App Launch Times Tests"
   }
@@ -47,6 +48,8 @@ const upgradeCapabilities = [
     'appium:settings[customSnapshotTimeout]': 20000, // Reduced from 50000 for faster detection
     'bstack:options': {
       buildName: 'iOS App Upgrade E2E',
+      local: 'true',
+      localIdentifier: process.env.GITHUB_RUN_ID,
     },
   },
 ];
@@ -88,7 +91,8 @@ config.services = [
     {
       accessibility: false,
       buildIdentifier: 'metamask-mobile-tests',
-      browserstackLocal: true,
+      browserstackLocal: false, // Don't start a new tunnel, use the one from GitHub Actions
+      localIdentifier: process.env.GITHUB_RUN_ID, // Use the same identifier as GitHub Actions
     }
   ]
 ];
