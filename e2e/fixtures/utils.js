@@ -2,7 +2,7 @@ import {
   Caip25CaveatType,
   Caip25EndowmentPermissionName,
 } from '@metamask/chain-agnostic-permission';
-import { DEFAULT_GANACHE_PORT } from '../../app/util/test/ganache';
+// import { DEFAULT_GANACHE_PORT } from '../../app/util/test/ganache';
 import { DEFAULT_ANVIL_PORT } from '../../e2e/seeder/anvil-manager';
 import { DEFAULT_FIXTURE_SERVER_PORT } from './fixture-server';
 import { DEFAULT_DAPP_SERVER_PORT } from './fixture-helper';
@@ -37,9 +37,9 @@ export function getSecondTestDappLocalUrl() {
 
 export const TEST_DAPP_LOCAL_URL = `http://localhost:${getLocalTestDappPort()}`;
 
-export function getGanachePort() {
-  return getServerPort(DEFAULT_GANACHE_PORT);
-}
+// export function getGanachePort() {
+//   return getServerPort(DEFAULT_GANACHE_PORT);
+// }
 export function AnvilPort() {
   return getServerPort(DEFAULT_ANVIL_PORT);
 }

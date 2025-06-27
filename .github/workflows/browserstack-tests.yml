@@ -1,0 +1,246 @@
+name: BrowserStack WDIO Tests
+
+on:
+  # Label trigger - runs when a specific label is added to a PR
+  pull_request:
+    types: [labeled]
+    branches:
+      - main
+      - develop
+  
+  # Commented out commit trigger - uncomment to enable
+  # push:
+  #   branches:
+  #     - main
+  #     - develop
+
+env:
+  BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+  BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+
+jobs:
+  # android-tests:
+  #   name: Android Tests
+  #   runs-on: ubuntu-latest
+  #   if: contains(github.event.pull_request.labels.*.name, 'run-android-tests')
+    
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20.18.1'
+  #         cache: 'yarn'
+
+  #     - name: Install dependencies
+  #       run: yarn install --frozen-lockfile
+
+  #     - name: Setup BrowserStack Local
+  #       uses: browserstack/github-actions/setup-local@master
+
+  #     - name: Run Android Tests
+  #       env:
+  #         BROWSERSTACK_DEVICE: ${{ vars.BROWSERSTACK_ANDROID_DEVICE || 'Samsung Galaxy S23 Ultra' }}
+  #         BROWSERSTACK_OS_VERSION: ${{ vars.BROWSERSTACK_ANDROID_OS_VERSION || '13.0' }}
+  #         BROWSERSTACK_TAG_EXPRESSION: ${{ vars.BROWSERSTACK_ANDROID_TAGS || '@smoke and @androidApp' }}
+  #       run: |
+  #         yarn test:wdio:android:browserstack
+
+  #     - name: Upload test results
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: android-test-results
+  #         path: wdio/reports/
+  #         retention-days: 30
+
+  # ios-tests:
+  #   name: iOS Tests
+  #   runs-on: ubuntu-latest
+  #   if: contains(github.event.pull_request.labels.*.name, 'run-ios-tests')
+    
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20.18.1'
+  #         cache: 'yarn'
+
+  #     - name: Install dependencies
+  #       run: yarn install --frozen-lockfile
+
+  #     - name: Setup BrowserStack Local
+  #       uses: browserstack/github-actions/setup-local@master
+
+  #     - name: Run iOS Tests
+  #       env:
+  #         BROWSERSTACK_DEVICE: ${{ vars.BROWSERSTACK_IOS_DEVICE || 'iPhone 15 Pro' }}
+  #         BROWSERSTACK_OS_VERSION: ${{ vars.BROWSERSTACK_IOS_OS_VERSION || '17.3' }}
+  #         BROWSERSTACK_TAG_EXPRESSION: ${{ vars.BROWSERSTACK_IOS_TAGS || '@smoke and @iosApp' }}
+  #         BROWSERSTACK_IOS_APP_URL: ${{ secrets.BROWSERSTACK_IOS_APP_URL }}
+  #       run: |
+  #         yarn test:wdio:ios:browserstack
+
+  #     - name: Upload test results
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: ios-test-results
+  #         path: wdio/reports/
+  #         retention-days: 30
+
+  # android-upgrade-tests:
+  #   name: Android Upgrade Tests
+  #   runs-on: ubuntu-latest
+  #   if: contains(github.event.pull_request.labels.*.name, 'run-android-upgrade-tests')
+    
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20.18.1'
+  #         cache: 'yarn'
+
+  #     - name: Install dependencies
+  #       run: yarn install --frozen-lockfile
+
+  #     - name: Setup BrowserStack Local
+  #       uses: browserstack/github-actions/setup-local@master
+
+  #     - name: Run Android Upgrade Tests
+  #       env:
+  #         BROWSERSTACK_DEVICE: ${{ vars.BROWSERSTACK_ANDROID_DEVICE || 'Google Pixel 6' }}
+  #         BROWSERSTACK_OS_VERSION: ${{ vars.BROWSERSTACK_ANDROID_OS_VERSION || '12.0' }}
+  #         BROWSERSTACK_ANDROID_APP_URL: ${{ secrets.BROWSERSTACK_ANDROID_APP_URL }}
+  #       run: |
+  #         yarn test:wdio:android:browserstack --upgrade
+
+  #     - name: Upload test results
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: android-upgrade-test-results
+  #         path: wdio/reports/
+  #         retention-days: 30
+
+  # ios-upgrade-tests:
+  #   name: iOS Upgrade Tests
+  #   runs-on: ubuntu-latest
+  #   if: contains(github.event.pull_request.labels.*.name, 'run-ios-upgrade-tests')
+    
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20.18.1'
+  #         cache: 'yarn'
+
+  #     - name: Install dependencies
+  #       run: yarn install --frozen-lockfile
+
+  #     - name: Setup BrowserStack Local
+  #       uses: browserstack/github-actions/setup-local@master
+
+  #     - name: Run iOS Upgrade Tests
+  #       env:
+  #         BROWSERSTACK_DEVICE: ${{ vars.BROWSERSTACK_IOS_DEVICE || 'iPhone 15 Pro' }}
+  #         BROWSERSTACK_OS_VERSION: ${{ vars.BROWSERSTACK_IOS_OS_VERSION || '17.3' }}
+  #         BROWSERSTACK_IOS_APP_URL: ${{ secrets.BROWSERSTACK_IOS_APP_URL }}
+  #         PRODUCTION_APP_URL: ${{ secrets.PRODUCTION_APP_URL }}
+  #       run: |
+  #         yarn test:wdio:ios:browserstack --upgrade
+
+  #     - name: Upload test results
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: ios-upgrade-test-results
+  #         path: wdio/reports/
+  #         retention-days: 30
+
+  android-performance-tests:
+    name: Android Performance Tests
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'run-android-performance-tests')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.1'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Setup BrowserStack Local
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          username: ${{ secrets.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+
+      - name: Run Android Performance Tests
+        env:
+          BROWSERSTACK_DEVICE: ${{ vars.BROWSERSTACK_ANDROID_DEVICE || 'Samsung Galaxy S23 Ultra' }}
+          BROWSERSTACK_OS_VERSION: ${{ vars.BROWSERSTACK_ANDROID_OS_VERSION || '13.0' }}
+        run: |
+          yarn test:wdio:android:browserstack --performance
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-performance-test-results
+          path: wdio/reports/
+          retention-days: 30
+
+  # ios-performance-tests:
+  #   name: iOS Performance Tests
+  #   runs-on: ubuntu-latest
+  #   if: contains(github.event.pull_request.labels.*.name, 'run-ios-performance-tests')
+    
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20.18.1'
+  #         cache: 'yarn'
+
+  #     - name: Install dependencies
+  #       run: yarn install --frozen-lockfile
+
+  #     - name: Setup BrowserStack Local
+  #       uses: browserstack/github-actions/setup-local@master
+
+  #     - name: Run iOS Performance Tests
+  #       env:
+  #         BROWSERSTACK_DEVICE: ${{ vars.BROWSERSTACK_IOS_DEVICE || 'iPhone 15 Pro' }}
+  #         BROWSERSTACK_OS_VERSION: ${{ vars.BROWSERSTACK_IOS_OS_VERSION || '17.3' }}
+  #         BROWSERSTACK_IOS_APP_URL: ${{ secrets.BROWSERSTACK_IOS_APP_URL }}
+  #       run: |
+  #         yarn test:wdio:ios:browserstack --performance
+
+  #     - name: Upload test results
+  #       uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: ios-performance-test-results
+  #         path: wdio/reports/
+  #         retention-days: 30 

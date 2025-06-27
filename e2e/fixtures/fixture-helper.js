@@ -2,9 +2,6 @@
 import FixtureServer, { DEFAULT_FIXTURE_SERVER_PORT } from './fixture-server';
 import FixtureBuilder from './fixture-builder';
 import { AnvilManager, defaultOptions } from '../seeder/anvil-manager';
-import Ganache from '../../app/util/test/ganache';
-
-import GanacheSeeder from '../../app/util/test/ganache-seeder';
 import axios from 'axios';
 import path from 'path';
 import createStaticServer from '../create-static-server';
@@ -17,7 +14,7 @@ import {
 import Utilities from '../utils/Utilities';
 import TestHelpers from '../helpers';
 import { startMockServer, stopMockServer } from '../api-mocking/mock-server';
-import { AnvilSeeder } from '../seeder/anvil-seeder';
+// import { AnvilSeeder } from '../seeder/anvil-seeder';
 
 export const DEFAULT_DAPP_SERVER_PORT = 8085;
 export const DEFAULT_TEST_DAPP_PATH = path.join('..', '..', 'node_modules', '@metamask', 'test-dapp', 'dist');
@@ -75,9 +72,7 @@ function normalizeLocalNodeOptions(localNodeOptions) {
       {
         type: localNodeOptions,
         options:
-          localNodeOptions === 'ganache'
-            ? defaultGanacheOptions
-            : localNodeOptions === 'anvil'
+          localNodeOptions === 'anvil'
             ? defaultOptions
             : {},
       },
@@ -89,9 +84,7 @@ function normalizeLocalNodeOptions(localNodeOptions) {
         return {
           type: node,
           options:
-            node === 'ganache'
-              ? defaultGanacheOptions
-              : node === 'anvil'
+            node === 'anvil'
               ? defaultOptions
               : {},
         };
@@ -101,9 +94,7 @@ function normalizeLocalNodeOptions(localNodeOptions) {
         return {
           type: node.type,
           options:
-            node.type === 'ganache'
-              ? { ...defaultGanacheOptions, ...(node.options || {}) }
-              : node.type === 'anvil'
+            node.type === 'anvil'
               ? { ...defaultOptions, ...(node.options || {}) }
               : node.options || {},
         };
@@ -189,7 +180,7 @@ export const stopFixtureServer = async (fixtureServer) => {
  * @param {Object} testSuite.params - The parameters passed to the test suite function.
  * @param {Object} [testSuite.params.contractRegistry] - Registry of deployed smart contracts.
  * @param {Object} [testSuite.params.mockServer] - Mock server instance for API mocking.
- * @param {Array} testSuite.params.localNodes - Array of local blockchain nodes (Anvil/Ganache instances).
+ * @param {Array} testSuite.params.localNodes - Array of local blockchain nodes (Anvil instances).
  * @returns {Promise<void>} - A promise that resolves once the test suite completes.
  * @throws {Error} - Throws an error if an exception occurs during the test suite execution.
  */
@@ -238,12 +229,6 @@ export async function withFixtures(options, testSuite) {
             localNodes.push(localNode);
             break;
 
-          case 'ganache':
-            localNode = new Ganache();
-            await localNode.start(nodeOptions);
-            localNodes.push(localNode);
-            break;
-
           case 'none':
             break;
 
@@ -270,31 +255,27 @@ export async function withFixtures(options, testSuite) {
     // We default the smart contract seeder to the first node client
     // If there's a future need to deploy multiple smart contracts in multiple clients
     // this assumption is no longer correct and the below code needs to be modified accordingly
-    if (smartContract) {
-      switch (localNodeOptsNormalized[0].type) {
-        case 'anvil':
-          seeder = new AnvilSeeder(localNodes[0].getProvider());
-          break;
+    // if (smartContract) {
+    //   switch (localNodeOptsNormalized[0].type) {
+    //     case 'anvil':
+    //       seeder = new AnvilSeeder(localNodes[0].getProvider());
+    //       break;
 
-        case 'ganache':
-          seeder = new GanacheSeeder(localNodes[0].getProvider());
-          break;
+    //     default:
+    //       throw new Error(
+    //         `Unsupported localNode: '${localNodeOptsNormalized[0].type}'. Cannot deploy smart contracts.`,
+    //       );
+    //   }
+    //   const contracts =
+    //     smartContract instanceof Array ? smartContract : [smartContract];
 
-        default:
-          throw new Error(
-            `Unsupported localNode: '${localNodeOptsNormalized[0].type}'. Cannot deploy smart contracts.`,
-          );
-      }
-      const contracts =
-        smartContract instanceof Array ? smartContract : [smartContract];
+    //   const hardfork = localNodeOptsNormalized[0].options.hardfork || 'prague';
+    //   for (const contract of contracts) {
+    //     await seeder.deploySmartContract(contract, hardfork);
+    //   }
 
-      const hardfork = localNodeOptsNormalized[0].options.hardfork || 'prague';
-      for (const contract of contracts) {
-        await seeder.deploySmartContract(contract, hardfork);
-      }
-
-      contractRegistry = seeder.getContractRegistry();
-    }
+    //   contractRegistry = seeder.getContractRegistry();
+    // }
 
     if (dapp) {
       if (dappOptions?.numberOfDapps) {

@@ -29,7 +29,6 @@ class SolanaNewFeatureSheet {
   get addAccountButton() {
     return Selectors.getXpathElementByResourceId(SolanaNewFeatureSheetSelectorsIDs.SOLANA_ADD_ACCOUNT_BUTTON_IN_SHEET);
   }
-
   get carouselLogo() {
     return Selectors.getXpathElementByResourceId(WalletViewSelectorsIDs.CAROUSEL_SIXTH_SLIDE);
   }

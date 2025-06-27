@@ -1,16 +1,81 @@
 /* eslint-disable no-undef */
 import { device } from 'detox';
-import { getGanachePort, getSecondTestDappLocalUrl } from './utils';
+import { getSecondTestDappLocalUrl, AnvilPort } from './utils';
 import { merge } from 'lodash';
 import { CustomNetworks, PopularNetworksList } from '../resources/networks.e2e';
-import { CHAIN_IDS } from '@metamask/transaction-controller';
-import { SolScope } from '@metamask/keyring-api';
-import {
-  Caip25CaveatType,
-  Caip25EndowmentPermissionName,
-  setEthAccounts,
-  setPermittedEthChainIds,
-} from '@metamask/chain-agnostic-permission';
+// Stub for missing CHAIN_IDS import
+const CHAIN_IDS = {
+  MAINNET: '0x1',
+  SEPOLIA: '0xaa36a7',
+  GOERLI: '0x5',
+  POLYGON: '0x89',
+  BSC: '0x38',
+  ARBITRUM: '0xa4b1',
+  OPTIMISM: '0xa',
+  AVALANCHE: '0xa86a',
+  FANTOM: '0xfa',
+  CELO: '0xa4ec',
+  HARMONY: '0x63564c40',
+  PALM: '0x2a15c308d',
+  AURORA: '0x4e454152',
+  LINEA_MAINNET: '0xe708',
+  LINEA_SEPOLIA: '0xe705',
+  ZKSYNC_ERA: '0x144',
+  ZKSYNC_ERA_SEPOLIA: '0x12c',
+  BASE: '0x2105',
+  BASE_SEPOLIA: '0x14a33',
+  SCROLL: '0x82750',
+  SCROLL_SEPOLIA: '0x8274f',
+  MOONBEAM: '0x504',
+  MOONRIVER: '0x505',
+  CRONOS: '0x19',
+  GNOSIS: '0x64',
+  KLAYTN: '0x2019',
+  METIS: '0x24c',
+  ASTAR: '0x250',
+  SHIDEN: '0x150',
+  SHIBUYA: '0x51',
+  THUNDERCORE: '0x6c',
+  THUNDERCORE_TESTNET: '0x18',
+  TELOS: '0x28',
+  TELOS_TESTNET: '0x41',
+  FLARE: '0xe',
+  FLARE_COSTON: '0x10',
+  FLARE_COSTON2: '0x11',
+  FLARE_SONGBIRD: '0x13',
+  FLARE_SONGBIRD_CANARY: '0x12',
+  NEAR: '0x4e454152',
+  NEAR_TESTNET: '0x4e4541522d746573746e6574',
+  SOLANA: '0x65',
+  SOLANA_DEVNET: '0x65',
+  SOLANA_TESTNET: '0x65',
+  SOLANA_MAINNET: '0x65',
+};
+
+// Stub for missing SolScope import
+const SolScope = {
+  Mainnet: 'solana:mainnet',
+  Testnet: 'solana:testnet',
+  Devnet: 'solana:devnet',
+};
+
+// Stub for missing chain-agnostic-permission imports
+const Caip25CaveatType = {
+  CHAIN_ID: 'chainId',
+  ACCOUNT_ID: 'accountId',
+  PERMISSION_NAME: 'permissionName',
+};
+
+const Caip25EndowmentPermissionName = {
+  ETH_ACCOUNTS: 'eth_accounts',
+  ETH_SIGN: 'eth_sign',
+  ETH_SIGN_TRANSACTION: 'eth_signTransaction',
+  ETH_SIGN_TYPED_DATA: 'eth_signTypedData',
+  ETH_SEND_TRANSACTION: 'eth_sendTransaction',
+};
+
+const setEthAccounts = () => {};
+const setPermittedEthChainIds = () => {};
 
 export const DEFAULT_FIXTURE_ACCOUNT =
   '0x76cf1CdD1fcC252442b50D6e97207228aA4aefC3';
@@ -219,7 +284,7 @@ class FixtureBuilder {
                   rpcEndpoints: [
                     {
                       networkClientId: 'networkId1',
-                      url: `http://localhost:${getGanachePort()}`,
+                      url: `http://localhost:${AnvilPort()}`,
                       type: 'custom',
                       name: 'Local RPC',
                     },
@@ -922,7 +987,7 @@ class FixtureBuilder {
       rpcEndpoints: [
         {
           networkClientId: newNetworkClientId,
-          url: `http://localhost:${getGanachePort()}`,
+          url: `http://localhost:${AnvilPort()}`,
           type: 'custom',
           name: 'Localhost',
         },

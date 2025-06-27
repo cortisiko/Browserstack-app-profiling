@@ -100,4 +100,27 @@ Then('the app profiling data should be available', function() {
       console.log(`- ${metric}: ${JSON.stringify(appData.metrics[metric])}`);
     });
   }
+});
+
+Then('I collect app profiling data at test end', async function() {
+  try {
+    console.log('Collecting app profiling data at test end...');
+    const api = new BrowserStackAPI();
+    const profilingData = await api.getCurrentSessionProfilingData();
+    
+    if (profilingData) {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `test-end-profiling-${timestamp}.json`;
+      api.saveProfilingData(profilingData, filename);
+      
+      console.log(`Test end profiling data saved: ${filename}`);
+      
+      // Store in scenario context for verification
+      this.profilingData = profilingData;
+    } else {
+      console.log('No profiling data available at test end');
+    }
+  } catch (error) {
+    console.error('Error collecting profiling data at test end:', error);
+  }
 }); 

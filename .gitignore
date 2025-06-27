@@ -1,0 +1,5 @@
+node_modules/
+.env
+wdio/
+wdio/reports/jsons/*
+wdio/reports/html/*
