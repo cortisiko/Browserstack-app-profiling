@@ -3,3 +3,4 @@ node_modules/
 wdio/
 wdio/reports/jsons/*
 wdio/reports/html/*
+wdio/reports/html/*
