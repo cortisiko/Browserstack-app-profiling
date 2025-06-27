@@ -1,8 +1,8 @@
-import { config } from '../../wdio.conf';
+import { config } from '../../wdio.conf.js';
 
 // Appium capabilities
 // https://appium.io/docs/en/writing-running-appium/caps/
-config.capabilities = [
+(config as any).capabilities = [
   {
     platformName: 'Android',
     'appium:noReset': false,
@@ -16,8 +16,8 @@ config.capabilities = [
 
 ];
 
-config.cucumberOpts.tagExpression = '@performance and @androidApp'; // pass tag to run tests specific to android
+config.cucumberOpts!.tagExpression = '@performance and @androidApp'; // pass tag to run tests specific to android
 
 const _config = config;
  
-export { _config as config };
+export { _config as config }; 

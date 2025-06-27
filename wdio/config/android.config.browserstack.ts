@@ -1,7 +1,8 @@
 import { removeSync } from 'fs-extra';
+import type { Options } from '@wdio/types';
 import generateTestReports from '../../wdio/utils/generateTestReports';
 import BrowserStackAPI from '../../wdio/utils/browserstackApi';
-import { config } from '../../wdio.conf';
+import { config } from '../../wdio.conf.js';
 
 const browserstack = require('browserstack-local');
 
@@ -10,6 +11,15 @@ const browserstack = require('browserstack-local');
 
 config.user = process.env.BROWSERSTACK_USERNAME;
 config.key = process.env.BROWSERSTACK_ACCESS_KEY;
+
+// Fix the specs path to be relative to the project root
+config.specs = ['../../wdio/features/**/*.feature'];
+
+// Clear exclude patterns to let tag filtering work
+config.exclude = [];
+
+// Remove the complex exclude patterns - let tag filtering handle it
+// config.exclude = [...];
 
 // Define capabilities for regular tests
 const defaultCapabilities = [
@@ -58,24 +68,35 @@ const { selectedCapabilities, defaultTagExpression } = (() => {
     if (isAppUpgrade) {
         return {
             selectedCapabilities: upgradeCapabilities,
-            defaultTagExpression: '@upgrade and @androidApp',
+            defaultTagExpression: '@upgrade',
         };
     } else if (isPerformance) {
         return {
             selectedCapabilities: defaultCapabilities,
-            defaultTagExpression: '@temp and @androidApp',
+            defaultTagExpression: '@temp',
         };
     } else {
         return {
             selectedCapabilities: defaultCapabilities,
-            defaultTagExpression: '@smoke and @androidApp',
+            defaultTagExpression: '@smoke',
         };
     }
 })();
 
 // Apply the selected configuration
-config.capabilities = selectedCapabilities;
-config.cucumberOpts.tagExpression = process.env.BROWSERSTACK_TAG_EXPRESSION || defaultTagExpression;
+(config as any).capabilities = selectedCapabilities;
+
+// Set the tags filter explicitly
+if (config.cucumberOpts) {
+  // Use standard WDIO v9 tag filtering syntax
+  config.cucumberOpts.tags = process.env.BROWSERSTACK_TAG_EXPRESSION || defaultTagExpression;
+}
+
+// Add debugging for tag expression
+console.log('=== Tag Expression Debug ===');
+console.log('Tag Expression:', config.cucumberOpts?.tags);
+console.log('Process env BROWSERSTACK_TAG_EXPRESSION:', process.env.BROWSERSTACK_TAG_EXPRESSION);
+console.log('Default tag expression:', defaultTagExpression);
 
 config.waitforTimeout = 10000;
 config.connectionRetryTimeout = 90000;
@@ -93,7 +114,7 @@ config.services = [
   ]
 ];
 
-config.onPrepare = function (config, capabilities) {
+config.onPrepare = function (config: any, capabilities: any) {
   removeSync('./wdio/reports');
   console.log('=== onPrepare called ===');
   console.log('Config:', JSON.stringify(config, null, 2));
@@ -101,17 +122,16 @@ config.onPrepare = function (config, capabilities) {
 };
 
 // Store session information for later use
-let sessionInfo = null;
+let sessionInfo: any = null;
 
-config.beforeSession = function (config, capabilities, specs, cid) {
+config.beforeSession = function (config: any, capabilities: any, specs: any) {
   // This will be called before each session starts
   console.log('=== beforeSession called ===');
   console.log('Session starting with capabilities:', JSON.stringify(capabilities, null, 2));
   console.log('Specs:', specs);
-  console.log('CID:', cid);
 };
 
-config.before = async function (capabilities, specs, browser) {
+config.before = async function (capabilities: any, specs: any, browser: any) {
   // This will be called before each test starts, when the driver is available
   console.log('=== before called ===');
   console.log('Browser object:', browser);
@@ -136,15 +156,14 @@ config.before = async function (capabilities, specs, browser) {
     };
     
     // Store globally so it can be accessed from Cucumber steps
-    global.sessionInfo = sessionInfo;
-    globalThis.sessionInfo = sessionInfo;
+    (global as any).sessionInfo = sessionInfo;
+    (globalThis as any).sessionInfo = sessionInfo;
     
     console.log('Session info stored in before:', JSON.stringify(sessionInfo, null, 2));
-    console.log('Session info stored globally:', JSON.stringify(global.sessionInfo, null, 2));
+    console.log('Session info stored globally:', JSON.stringify((global as any).sessionInfo, null, 2));
     
     // Try to capture the actual BrowserStack session ID
     try {
-      const BrowserStackAPI = require('../utils/browserstackApi');
       const api = new BrowserStackAPI();
       
       // Look for BrowserStack session ID in the capabilities or environment
@@ -160,22 +179,21 @@ config.before = async function (capabilities, specs, browser) {
     }
   } catch (error) {
     console.error('Error capturing session info in before:', error);
-    console.error('Error stack:', error.stack);
+    console.error('Error stack:', (error as Error).stack);
   }
 };
 
-config.afterSession = async function (config, capabilities, specs, cid) {
+config.afterSession = async function (config: any, capabilities: any, specs: any) {
   // This will be called after each session ends
   console.log('=== afterSession called ===');
   console.log('Config:', JSON.stringify(config, null, 2));
   console.log('Capabilities:', JSON.stringify(capabilities, null, 2));
   console.log('Specs:', specs);
-  console.log('CID:', cid);
   console.log('Session info available in afterSession:', !!sessionInfo);
   console.log('Session info in afterSession:', JSON.stringify(sessionInfo, null, 2));
 };
 
-config.onComplete = async function (exitCode, config, capabilities, results) {
+config.onComplete = async function (exitCode: any, config: any, capabilities: any, results: any) {
   console.log('=== onComplete called ===');
   console.log('Exit code:', exitCode);
   console.log('Config:', JSON.stringify(config, null, 2));
@@ -190,7 +208,6 @@ config.onComplete = async function (exitCode, config, capabilities, results) {
   try {
     console.log('=== Collecting app profiling data for current session ===');
     
-    const BrowserStackAPI = require('../utils/browserstackApi');
     const api = new BrowserStackAPI();
     
     // Use the new method that only gets data for the current session
@@ -209,12 +226,12 @@ config.onComplete = async function (exitCode, config, capabilities, results) {
     
   } catch (error) {
     console.error('Error collecting profiling data:', error);
-    console.error('Error stack:', error.stack);
+    console.error('Error stack:', (error as Error).stack);
   }
 };
 
-delete config.port;
-delete config.path;
-delete config.services;
+delete (config as any).port;
+delete (config as any).path;
+delete (config as any).services;
 
-module.exports = { config };
+export { config }; 
