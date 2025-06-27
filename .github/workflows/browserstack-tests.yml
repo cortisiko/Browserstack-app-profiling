@@ -187,11 +187,19 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      # - name: Setup BrowserStack Local
+      #   uses: browserstack/github-actions/setup-env@master
+      #   with:
+      #     username: ${{ secrets.BROWSERSTACK_USERNAME }}
+      #     access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      #     build-name: ${{ github.repository }}-${{ github.run_number }}
+          # project-name: ${{ github.repository }}
+
       - name: Setup BrowserStack Local
         uses: browserstack/github-actions/setup-local@master
         with:
-          username: ${{ secrets.BROWSERSTACK_USERNAME }}
-          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          local-testing: start
+          local-identifier: ${{ github.run_id }}
 
       - name: Run Android Performance Tests
         env:
