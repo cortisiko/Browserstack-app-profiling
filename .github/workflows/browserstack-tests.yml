@@ -245,33 +245,30 @@ jobs:
             
             # Use our enhanced script to handle multiple files
             if node -e "const { formatMultipleProfilingFiles } = require('./wdio/utils/formatProfilingComment.js'); console.log(formatMultipleProfilingFiles());" 2>/dev/null; then
-              COMMENT=$(node -e "const { formatMultipleProfilingFiles } = require('./wdio/utils/formatProfilingComment.js'); console.log(formatMultipleProfilingFiles());")
+              node -e "const { formatMultipleProfilingFiles } = require('./wdio/utils/formatProfilingComment.js'); console.log(formatMultipleProfilingFiles());" > comment.txt
             else
               # Fallback to finding latest file
               LATEST_PROFILING_FILE=$(find wdio/reports -name "profiling-data-*.json" -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -f2- -d" ")
               
               if [ -n "$LATEST_PROFILING_FILE" ] && [ -f "$LATEST_PROFILING_FILE" ]; then
                 echo "Found profiling file: $LATEST_PROFILING_FILE"
-                COMMENT=$(node wdio/utils/formatProfilingComment.js "$LATEST_PROFILING_FILE")
+                node wdio/utils/formatProfilingComment.js "$LATEST_PROFILING_FILE" > comment.txt
               else
                 echo "No profiling data found"
-                COMMENT="## ❌ No AppProfiling Data Available
-
-No profiling data was collected during this test run."
+                echo "## ❌ No AppProfiling Data Available" > comment.txt
+                echo "" >> comment.txt
+                echo "No profiling data was collected during this test run." >> comment.txt
               fi
             fi
           else
             echo "Reports directory not found"
-            COMMENT="## ❌ No AppProfiling Data Available
-
-Reports directory not found. Tests may not have completed successfully."
+            echo "## ❌ No AppProfiling Data Available" > comment.txt
+            echo "" >> comment.txt
+            echo "Reports directory not found. Tests may not have completed successfully." >> comment.txt
           fi
           
-          # Escape the comment for GitHub Actions
-          COMMENT="${COMMENT//'%'/'%25'}"
-          COMMENT="${COMMENT//$'\n'/'%0A'}"
-          COMMENT="${COMMENT//$'\r'/'%0D'}"
-          
+          # Read the comment and set it as output
+          COMMENT=$(cat comment.txt)
           echo "comment<<EOF" >> $GITHUB_OUTPUT
           echo "$COMMENT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
