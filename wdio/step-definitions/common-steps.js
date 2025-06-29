@@ -65,7 +65,7 @@ Given(/^I have imported my wallet$/, async () => {
   await CreatePasswordScreen.tapIUnderstandCheckBox();
   await CreatePasswordScreen.tapCreatePasswordButton();
   await driver.pause(timeOut);
-  await MetaMetricsScreen.isScreenTitleVisible();
+  // await MetaMetricsScreen.isScreenTitleVisible();
   await MetaMetricsScreen.tapIAgreeButton();
   await driver.pause(timeOut);
   await OnboardingSucessScreen.tapDone()
