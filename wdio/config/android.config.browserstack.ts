@@ -113,8 +113,11 @@ config.services = [
     {
       accessibility: false,
       buildIdentifier: 'metamask-mobile-tests',
-      browserstackLocal: false,
-      localIdentifier: process.env.GITHUB_RUN_ID,
+      browserstackLocal: true,
+      localIdentifier: process.env.GITHUB_RUN_ID || process.env.BROWSERSTACK_LOCAL_IDENTIFIER,
+      forceLocal: true,
+      verbose: true,
+      localArgs: ['--force-local', '--verbose'],
     }
   ]
 ];
