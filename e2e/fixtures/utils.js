@@ -44,7 +44,8 @@ export function AnvilPort() {
   return getServerPort(DEFAULT_ANVIL_PORT);
 }
 export function getFixturesServerPort() {
-  return getServerPort(DEFAULT_FIXTURE_SERVER_PORT);
+  // Always use fixed port 14939 for fixture server
+  return 14939;
 }
 
 export function getLocalTestDappPort() {
