@@ -10,8 +10,8 @@ import ADB from 'appium-adb';
 Given('I start the fixture server with login state', async function() {
   const state = new FixtureBuilder().withProfileSyncingEnabled().build();
   
-  // Try to get the actual port being used
-  let fixturePort = 12345; // default fallback
+  // Get the fixture server port from utils (now returns fixed port 14939)
+  let fixturePort = 14939; // fallback
   try {
     const utils = await import('../../e2e/fixtures/utils.js');
     fixturePort = utils.getFixturesServerPort();
@@ -72,16 +72,35 @@ Given('I start the fixture server with login state', async function() {
       // Log some key fixture data for debugging
       if (fixtureData.engine) {
         console.log('Engine state loaded:', !!fixtureData.engine);
-      }
-      if (fixtureData.metamask) {
-        console.log('MetaMask state loaded:', !!fixtureData.metamask);
-        if (fixtureData.metamask.identities) {
-          const identityCount = Object.keys(fixtureData.metamask.identities).length;
-          console.log(`Number of identities: ${identityCount}`);
+        if (fixtureData.engine.backgroundState) {
+          console.log('Background state keys:', Object.keys(fixtureData.engine.backgroundState));
+          
+          // Check if user is logged in
+          if (fixtureData.engine.backgroundState.AuthenticationController) {
+            console.log('Authentication state:', fixtureData.engine.backgroundState.AuthenticationController);
+          }
+          
+          // Check if accounts exist
+          if (fixtureData.engine.backgroundState.AccountsController) {
+            console.log('Accounts state:', fixtureData.engine.backgroundState.AccountsController);
+          }
+          
+          // Check if preferences exist
+          if (fixtureData.engine.backgroundState.PreferencesController) {
+            console.log('Preferences state:', fixtureData.engine.backgroundState.PreferencesController);
+          }
         }
       }
-      if (fixtureData.permissions) {
-        console.log('Permissions state loaded:', !!fixtureData.permissions);
+      
+      if (fixtureData.user) {
+        console.log('User state loaded:', fixtureData.user);
+        console.log('User logged in:', fixtureData.user.userLoggedIn);
+        console.log('Password set:', fixtureData.user.passwordSet);
+        console.log('Seedphrase backed up:', fixtureData.user.seedphraseBackedUp);
+      }
+      
+      if (fixtureData.asyncState) {
+        console.log('Async state loaded:', fixtureData.asyncState);
       }
       
       // Log a sample of the fixture data (first 500 chars)
@@ -137,35 +156,62 @@ Given('I start the fixture server with login state', async function() {
     console.log('❌ Could not test fixture server from device:', deviceError.message);
   }
   
-  // if (!isBrowserStack) {
-  //   // const platform = await driver.getPlatform();
-
-  //   // Only execute these steps if NOT running on BrowserStack
-  //   if (await driver.getPlatform() === 'Android') {
-  //     const adb = await ADB.createADB();  
-  //     await adb.reversePort(8545, 8545);
-  //     await adb.reversePort(12345, 12345);
-  //   }
-  //   await driver.terminateApp(bundleId);
-  //   await driver.pause(1000);
-
-  //   await driver.activateApp(bundleId);
-  //   console.log('App launched, waiting for UI to stabilize...');
-  // } else {
-  //   console.log('Running on BrowserStack - skipping local ADB and app management steps');
-  // }
-
-  // if (await driver.getPlatform() === 'iOS') {
-
-  // console.log('Re-launching MetaMask on iOS...');
-  // await driver.executeScript('mobile:launchApp', [
-  //   {
-  //     bundleId,
-  //     arguments: ['fixtureServerPort', '12345'],
-  //     environment: {
-  //       fixtureServerPort: `${'12345'}`,
-  //     },
-  //   },
-  // ]);
+  // Restart the app with the correct fixture server port
+  console.log('=== Restarting App with Fixture Server Port ===');
+  console.log(`Using fixture server port: ${fixturePort}`);
+  
+  try {
+    // Terminate the current app
+    await driver.terminateApp(bundleId);
+    await driver.pause(2000);
+    
+    // Launch the app with fixture server port argument
+    await driver.executeScript('mobile:launchApp', [
+      {
+        bundleId,
+        arguments: [`fixtureServerPort=${fixturePort}`],
+        environment: {
+          fixtureServerPort: `${fixturePort}`,
+        },
+      },
+    ]);
+    
+    console.log(`✅ App restarted with fixture server port: ${fixturePort}`);
+    await driver.pause(3000);
+  } catch (launchError) {
+    console.log('⚠️ Could not restart app with fixture server port:', launchError.message);
+    console.log('App may already be using the correct port or restart not needed');
+  }
+  
   // Wait for fixture server to be ready
+  await driver.pause(3000);
+  console.log('App launch completed');
+  
+  // Verify app can access fixture server after restart
+  console.log('=== Verifying App Access to Fixture Server ===');
+  try {
+    // Test if the app can access the fixture server through the tunnel
+    const capabilities = await driver.getAppiumSessionCapabilities();
+    const platform = capabilities.platformName || capabilities.platform;
+    
+    if (platform === 'Android') {
+      const adb = await ADB.createADB();
+      
+      // Test fixture server access from device after app restart
+      const curlResult = await adb.shell(`curl -s -o /dev/null -w "%{http_code}" http://localhost:${fixturePort}/state.json`);
+      console.log('Device curl result after app restart:', curlResult);
+      
+      if (curlResult.trim() === '200') {
+        console.log('✅ Device can still access fixture server after app restart');
+        
+        // Get the actual fixture data from device perspective
+        const responseData = await adb.shell(`curl -s http://localhost:${fixturePort}/state.json`);
+        console.log('Device fixture data after restart (first 200 chars):', responseData.substring(0, 200));
+      } else {
+        console.log(`❌ Device cannot access fixture server after app restart: ${curlResult.trim()}`);
+      }
+    }
+  } catch (verificationError) {
+    console.log('❌ Could not verify app access to fixture server:', verificationError.message);
+  }
 });
