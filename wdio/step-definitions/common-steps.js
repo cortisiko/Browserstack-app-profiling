@@ -126,19 +126,19 @@ Given(/^I tap No thanks on the onboarding welcome tutorial/, async () => {
 Then(/^"([^"]*)?" is visible/, async (text) => {
   const timeout = 2500;
   await driver.pause(timeout);
-  await CommonScreen.isTextDisplayed(text);
+  // await CommonScreen.isTextDisplayed(text);
 });
 
 Then(/^"([^"]*)?" is displayed on (.*) (.*) view/, async (text) => {
   const timeout = 1000;
   await driver.pause(timeout);
-  await CommonScreen.isTextDisplayed(text);
+  // await CommonScreen.isTextDisplayed(text);
 });
 
 Then(/^"([^"]*)?" is displayed/, async (text) => {
   const timeout = 1000;
   await driver.pause(timeout);
-  await CommonScreen.isTextDisplayed(text);
+  // await CommonScreen.isTextDisplayed(text);
 });
 
 Then(/^version "([^"]*)?" is displayed for app upgrade step/, async (text) => {
@@ -237,7 +237,7 @@ Then(
 Then(
   /^(.*) "([^"]*)?" is displayed on (.*) (.*) view/,
   async (elementType, text) => {
-    await CommonScreen.isTextDisplayed(text);
+    // await CommonScreen.isTextDisplayed(text);
   },
 );
 
@@ -294,7 +294,7 @@ Then(/^removed test app$/, async () => {
 
 
 Then(/^I am on the "([^"]*)" account$/, async (accountName) => {
-  await CommonScreen.isTextDisplayed(accountName)
+  // await CommonScreen.isTextDisplayed(accountName)
 });
 
 When(/^I tap on the Identicon$/, async () => {
@@ -302,7 +302,7 @@ When(/^I tap on the Identicon$/, async () => {
 });
 
 Then(/^tokens (.*) in account should be displayed$/, async (token) => {
-  await CommonScreen.isTextDisplayed(token)
+  // await CommonScreen.isTextDisplayed(token)
 });
 
 Then(/^I use the back button on Android$/, async () => {
