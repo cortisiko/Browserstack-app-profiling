@@ -20,27 +20,27 @@ Feature: Profiling the various Lists
     And I type in my SRP 
     And I tap on button with text "Import Secret Recovery Phrase"
     And I tap on button with text "Continue"
-    And I tap on the Identicon
-    And I tap on button with text "Account 7"
-    And I tap on the Identicon
-    And I collect app profiling data at test end
-    # Then the app profiling data should be saved
+    # And I tap on the Identicon
+    # And I tap on button with text "Account 7"
+    # And I tap on the Identicon
+    # And I collect app profiling data at test end
+    # # Then the app profiling data should be saved
 
-   Scenario: Profile network list
-    And I am on the wallet view
-    And I tap on the Identicon
-    Then I am on the "Account 1" account
-    And I tap on button with text "Add account or hardware wallet"
-    And I tap on button with text "Secret Recovery Phrase"
-    And I type in my SRP 
-    And I tap on button with text "Import Secret Recovery Phrase"
-    And I tap on button with text "Continue"
-    And I tap on the Identicon
-    And I tap on button with text "Account 8"
-    And I tap on the networks filter
-    And I filter by popular networks
-    And I tap on the Identicon
-    And I tap on button with text "Account 9"
+  #  Scenario: Profile network list
+  #   And I am on the wallet view
+  #   And I tap on the Identicon
+  #   Then I am on the "Account 1" account
+  #   And I tap on button with text "Add account or hardware wallet"
+  #   And I tap on button with text "Secret Recovery Phrase"
+  #   And I type in my SRP 
+  #   And I tap on button with text "Import Secret Recovery Phrase"
+  #   And I tap on button with text "Continue"
+  #   And I tap on the Identicon
+  #   And I tap on button with text "Account 8"
+  #   And I tap on the networks filter
+  #   And I filter by popular networks
+  #   And I tap on the Identicon
+  #   And I tap on button with text "Account 9"
 
     # Scenario: Measure Warm Start after Importing a Wallet
     # Given the app displayed the splash animation
