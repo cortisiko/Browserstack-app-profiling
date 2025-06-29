@@ -18,8 +18,6 @@ env:
   BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
   BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
   MM_TEST_ACCOUNT_SRP: ${{ secrets.MM_TEST_ACCOUNT_SRP }}
-  MM_TEST_ACCOUNT_ADDRESS: ${{ secrets.MM_TEST_ACCOUNT_ADDRESS }}
-  MM_TEST_ACCOUNT_PRIVATE_KEY: ${{ secrets.MM_TEST_ACCOUNT_PRIVATE_KEY }}
 
 jobs:
   # android-tests:
@@ -215,9 +213,6 @@ jobs:
         env:
           BROWSERSTACK_DEVICE: ${{ vars.BROWSERSTACK_ANDROID_DEVICE || 'Samsung Galaxy S23 Ultra' }}
           BROWSERSTACK_OS_VERSION: ${{ vars.BROWSERSTACK_ANDROID_OS_VERSION || '13.0' }}
-          MM_TEST_ACCOUNT_SRP: ${{ secrets.MM_TEST_ACCOUNT_SRP }}
-          MM_TEST_ACCOUNT_ADDRESS: ${{ secrets.MM_TEST_ACCOUNT_ADDRESS }}
-          MM_TEST_ACCOUNT_PRIVATE_KEY: ${{ secrets.MM_TEST_ACCOUNT_PRIVATE_KEY }}
           BROWSERSTACK_LOCAL: true
           BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
         run: |
