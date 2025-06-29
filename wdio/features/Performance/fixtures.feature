@@ -7,8 +7,9 @@ Feature: Profiling the various Lists
 
   Background:
     Given I start the fixture server with login state
-     When I fill my password in the Login screen
-    And The timer starts running after I tap the login button
+    And I have imported my wallet
+    #  When I fill my password in the Login screen
+    # And The timer starts running after I tap the login button
  
   Scenario: Profile the account list after importing multiple SRPs
     Given I am on the wallet screen
