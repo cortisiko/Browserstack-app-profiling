@@ -202,18 +202,56 @@ jobs:
           build-name: ${{ github.repository }}-${{ github.run_number }}
           project-name: ${{ github.repository }}
 
-      - name: Setup BrowserStack Local
-        uses: browserstack/github-actions/setup-local@master
-        with:
-          local-testing: start
-          local-identifier: ${{ github.run_id }}
-          local-args: --force-local
+      - name: Start BrowserStack Local Tunnel (Custom)
+        run: |
+          echo "Downloading BrowserStack Local binary..."
+          
+          # Download BrowserStack Local binary for Linux
+          curl -O https://www.browserstack.com/browserstack-local/BrowserStackLocal-linux-x64.zip
+          
+          # Unzip the binary
+          unzip BrowserStackLocal-linux-x64.zip
+          
+          # Make it executable
+          chmod +x BrowserStackLocal
+          
+          echo "Starting BrowserStack Local tunnel with binary..."
+          echo "Local Identifier: $BROWSERSTACK_LOCAL_IDENTIFIER"
+          
+          # Start the tunnel in the background
+          ./BrowserStackLocal --key $BROWSERSTACK_ACCESS_KEY --local-identifier $BROWSERSTACK_LOCAL_IDENTIFIER --verbose --force-local &
+          
+          # Store the process ID for cleanup
+          echo $! > browserstack-local.pid
+          
+          echo "BrowserStack Local tunnel started in background"
+        env:
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
 
       - name: Wait for BrowserStack Local
         run: |
-          echo "Waiting for BrowserStack Local to be ready..."
+          echo "Waiting for BrowserStack Local tunnel to be ready..."
+          
+          # Wait for tunnel to be established
           sleep 30
-          echo "BrowserStack Local should be ready now"
+          
+          echo "BrowserStack Local tunnel should be ready now"
+          
+          # Check if the process is still running
+          if [ -f browserstack-local.pid ]; then
+            PID=$(cat browserstack-local.pid)
+            if ps -p $PID > /dev/null; then
+              echo "✅ BrowserStack Local tunnel is running (PID: $PID)"
+            else
+              echo "❌ BrowserStack Local tunnel process is not running"
+              exit 1
+            fi
+          else
+            echo "❌ BrowserStack Local PID file not found"
+            exit 1
+          fi
 
       - name: Run Android Performance Tests
         env:
@@ -316,6 +354,43 @@ jobs:
           name: android-performance-test-results
           path: wdio/reports/
           retention-days: 30
+
+      - name: Stop BrowserStack Local Tunnel
+        if: always()
+        run: |
+          echo "Stopping BrowserStack Local tunnel..."
+          
+          # Check if PID file exists and stop the process
+          if [ -f browserstack-local.pid ]; then
+            PID=$(cat browserstack-local.pid)
+            echo "Stopping BrowserStack Local process (PID: $PID)"
+            
+            # Try to stop gracefully first
+            if kill -TERM $PID 2>/dev/null; then
+              echo "Sent TERM signal to BrowserStack Local"
+              
+              # Wait for graceful shutdown
+              sleep 5
+              
+              # Force kill if still running
+              if ps -p $PID > /dev/null; then
+                echo "Force killing BrowserStack Local process"
+                kill -KILL $PID 2>/dev/null
+              fi
+            else
+              echo "Process $PID not found or already stopped"
+            fi
+            
+            # Clean up PID file
+            rm -f browserstack-local.pid
+          else
+            echo "No PID file found, BrowserStack Local may not be running"
+          fi
+          
+          # Also try to kill any remaining BrowserStackLocal processes
+          pkill -f BrowserStackLocal || true
+          
+          echo "✅ BrowserStack Local tunnel cleanup completed"
 
   # ios-performance-tests:
   #   name: iOS Performance Tests
