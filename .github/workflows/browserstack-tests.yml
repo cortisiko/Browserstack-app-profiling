@@ -209,22 +209,22 @@ jobs:
         env:
           BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
 
-      - name: Wait for BrowserStack Local
-        run: |
-          echo "Waiting for BrowserStack Local tunnel to be ready..."
-          # Wait for tunnel to be established
-          sleep 30
-          echo "BrowserStack Local tunnel should be ready now"
+      # - name: Wait for BrowserStack Local
+      #   run: |
+      #     echo "Waiting for BrowserStack Local tunnel to be ready..."
+      #     # Wait for tunnel to be established
+      #     sleep 30
+      #     echo "BrowserStack Local tunnel should be ready now"
           
-          # Verify tunnel is running
-          if node wdio/utils/browserstackLocalSetup.js status | grep -q '"isRunning": true'; then
-            echo "✅ BrowserStack Local tunnel is running"
-          else
-            echo "❌ BrowserStack Local tunnel is not running"
-            exit 1
-          fi
-        env:
-          BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
+      #     # Verify tunnel is running
+      #     if node wdio/utils/browserstackLocalSetup.js status | grep -q '"isRunning": true'; then
+      #       echo "✅ BrowserStack Local tunnel is running"
+      #     else
+      #       echo "❌ BrowserStack Local tunnel is not running"
+      #       exit 1
+      #     fi
+      #   env:
+      #     BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
 
       - name: Run Android Performance Tests
         env:
