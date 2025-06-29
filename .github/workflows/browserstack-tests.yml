@@ -203,13 +203,105 @@ jobs:
         with:
           local-testing: start
           local-identifier: ${{ github.run_id }}
+          local-args: --force-local
+
+      - name: Wait for BrowserStack Local
+        run: |
+          echo "Waiting for BrowserStack Local to be ready..."
+          sleep 30
+          echo "BrowserStack Local should be ready now"
 
       - name: Run Android Performance Tests
         env:
           BROWSERSTACK_DEVICE: ${{ vars.BROWSERSTACK_ANDROID_DEVICE || 'Samsung Galaxy S23 Ultra' }}
           BROWSERSTACK_OS_VERSION: ${{ vars.BROWSERSTACK_ANDROID_OS_VERSION || '13.0' }}
+          MM_TEST_ACCOUNT_SRP: ${{ secrets.MM_TEST_ACCOUNT_SRP }}
+          MM_TEST_ACCOUNT_ADDRESS: ${{ secrets.MM_TEST_ACCOUNT_ADDRESS }}
+          MM_TEST_ACCOUNT_PRIVATE_KEY: ${{ secrets.MM_TEST_ACCOUNT_PRIVATE_KEY }}
+          BROWSERSTACK_LOCAL: true
+          BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
         run: |
           yarn test:wdio:android:browserstack --performance
+
+      - name: Generate AppProfiling Comment
+        id: profiling-comment
+        if: always()
+        run: |
+          # Check if profiling data exists
+          if [ -d "wdio/reports" ]; then
+            echo "Checking for profiling data in wdio/reports..."
+            
+            # Use our enhanced script to handle multiple files
+            if node -e "const { formatMultipleProfilingFiles } = require('./wdio/utils/formatProfilingComment.js'); console.log(formatMultipleProfilingFiles());" 2>/dev/null; then
+              COMMENT=$(node -e "const { formatMultipleProfilingFiles } = require('./wdio/utils/formatProfilingComment.js'); console.log(formatMultipleProfilingFiles());")
+            else
+              # Fallback to finding latest file
+              LATEST_PROFILING_FILE=$(find wdio/reports -name "profiling-data-*.json" -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -f2- -d" ")
+              
+              if [ -n "$LATEST_PROFILING_FILE" ] && [ -f "$LATEST_PROFILING_FILE" ]; then
+                echo "Found profiling file: $LATEST_PROFILING_FILE"
+                COMMENT=$(node wdio/utils/formatProfilingComment.js "$LATEST_PROFILING_FILE")
+              else
+                echo "No profiling data found"
+                COMMENT="## ❌ No AppProfiling Data Available
+
+No profiling data was collected during this test run."
+              fi
+            fi
+          else
+            echo "Reports directory not found"
+            COMMENT="## ❌ No AppProfiling Data Available
+
+Reports directory not found. Tests may not have completed successfully."
+          fi
+          
+          # Escape the comment for GitHub Actions
+          COMMENT="${COMMENT//'%'/'%25'}"
+          COMMENT="${COMMENT//$'\n'/'%0A'}"
+          COMMENT="${COMMENT//$'\r'/'%0D'}"
+          
+          echo "comment<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `${{ steps.profiling-comment.outputs.comment }}`;
+            
+            // Check if there's already a comment from this workflow
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const existingComment = comments.find(comment => 
+              comment.user.login === 'github-actions[bot]' && 
+              comment.body.includes('AppProfiling Metrics')
+            );
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+              console.log('Updated existing AppProfiling comment');
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+              console.log('Created new AppProfiling comment');
+            }
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
