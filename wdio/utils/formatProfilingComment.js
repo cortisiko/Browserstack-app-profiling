@@ -19,7 +19,7 @@ function formatProfilingComment(profilingDataPath) {
     }
     
     // Build the GitHub comment
-    let comment = '## 📊 AppProfiling Metrics :chart_with_upwards_trend:\n\n';
+    let comment = '## 📊 App Profiling Metrics :chart_with_upwards_trend:\n\n';
     
     // Session information
     comment += `**Session ID:** \`${currentSession.sessionId}\`\n`;
@@ -192,12 +192,12 @@ function formatMultipleProfilingFiles(reportsDir = './wdio/reports') {
     }
     
     // Multiple files - create a summary
-    let comment = '## 📊 AppProfiling Metrics Summary :chart_with_upwards_trend:\n\n';
+    let comment = '## 📊 App Profiling Metrics Summary :chart_with_upwards_trend:\n\n';
     comment += `**Total Sessions:** ${files.length}\n\n`;
     
     // Show the most recent session in detail
     comment += '### 🆕 Latest Session Details\n\n';
-    comment += formatProfilingComment(files[0].path).replace('## 📊 AppProfiling Metrics :chart_with_upwards_trend:\n\n', '');
+    comment += formatProfilingComment(files[0].path).replace('## 📊 App Profiling Metrics :chart_with_upwards_trend:\n\n', '');
     
     // Show summary of all sessions
     comment += '\n### 📋 All Sessions Summary\n\n';

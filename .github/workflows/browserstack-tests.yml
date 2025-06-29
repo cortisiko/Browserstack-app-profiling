@@ -286,7 +286,7 @@ jobs:
             
             const existingComment = comments.find(comment => 
               comment.user.login === 'github-actions[bot]' && 
-              comment.body.includes('AppProfiling Metrics')
+              comment.body.includes('App Profiling Metrics')
             );
             
             if (existingComment) {
