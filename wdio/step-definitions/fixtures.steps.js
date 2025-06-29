@@ -10,10 +10,20 @@ import ADB from 'appium-adb';
 Given('I start the fixture server with login state', async function() {
   const state = new FixtureBuilder().withProfileSyncingEnabled().build();
   
+  // Try to get the actual port being used
+  let fixturePort = 12345; // default fallback
+  try {
+    const utils = await import('../../e2e/fixtures/utils.js');
+    fixturePort = utils.getFixturesServerPort();
+    console.log('Fixture server port from utils:', fixturePort);
+  } catch (utilsError) {
+    console.log('Could not get port from utils:', utilsError.message);
+  }
+  
   // Check if fixture server is running before starting
   console.log('=== Checking Fixture Server Status ===');
   try {
-    const statusResponse = await fetch('http://localhost:12345/state.json');
+    const statusResponse = await fetch(`http://localhost:${fixturePort}/state.json`);
     if (statusResponse.ok) {
       const status = await statusResponse.json();
       console.log('✅ Fixture server is already running with state:', Object.keys(status));
@@ -50,19 +60,10 @@ Given('I start the fixture server with login state', async function() {
     console.log('Could not check fixture server status:', statusError.message);
   }
   
-  // Try to get the actual port being used
-  try {
-    const utils = await import('../../e2e/fixtures/utils.js');
-    const port = utils.getFixturesServerPort();
-    console.log('Fixture server port from utils:', port);
-  } catch (utilsError) {
-    console.log('Could not get port from utils:', utilsError.message);
-  }
-  
   // Verify fixture state is loaded by making a curl request
   console.log('=== Verifying Fixture State ===');
   try {
-    const response = await fetch('http://localhost:12345/state.json');
+    const response = await fetch(`http://localhost:${fixturePort}/state.json`);
     if (response.ok) {
       const fixtureData = await response.json();
       console.log('✅ Fixture server is accessible and responding');
@@ -93,7 +94,7 @@ Given('I start the fixture server with login state', async function() {
     console.log('❌ Could not access fixture server:', error.message);
     console.log('This might indicate:');
     console.log('  1. Fixture server is not running');
-    console.log('  2. Port 12345 is blocked');
+    console.log(`  2. Port ${fixturePort} is blocked`);
     console.log('  3. BrowserStack tunnel is not working');
   }
   
@@ -113,7 +114,7 @@ Given('I start the fixture server with login state', async function() {
       console.log('Testing fixture server from Android device...');
       
       // Try to curl the fixture server from the device
-      const curlResult = await adb.shell('curl -s -o /dev/null -w "%{http_code}" http://localhost:12345/state.json');
+      const curlResult = await adb.shell(`curl -s -o /dev/null -w "%{http_code}" http://localhost:${fixturePort}/state.json`);
       console.log('Device curl result:', curlResult);
       
       if (curlResult.trim() === '200') {
@@ -124,7 +125,7 @@ Given('I start the fixture server with login state', async function() {
       
       // Also try to get the actual response
       try {
-        const responseData = await adb.shell('curl -s http://localhost:12345/state.json');
+        const responseData = await adb.shell(`curl -s http://localhost:${fixturePort}/state.json`);
         console.log('Device fixture server response:', responseData);
       } catch (curlError) {
         console.log('Could not get response data from device:', curlError.message);
