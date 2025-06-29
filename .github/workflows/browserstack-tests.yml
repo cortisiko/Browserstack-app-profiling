@@ -256,8 +256,12 @@ jobs:
           # Test local access
           echo "Testing local fixture server access..."
           
-          # Get the correct fixture server port
-          FIXTURE_PORT=$(node -e "const { getFixturesServerPort } = require('./e2e/fixtures/utils.js'); console.log(getFixturesServerPort());")
+          # Get the correct fixture server port (simplified approach)
+          # In CI, the port is transformed based on process.pid
+          DEFAULT_PORT=12345
+          PID=$(echo $$)
+          FIXTURE_PORT=$(( (PID % 100000) + DEFAULT_PORT ))
+          FIXTURE_PORT=$(( FIXTURE_PORT % 65536 ))
           echo "Fixture server port: $FIXTURE_PORT"
           
           if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$FIXTURE_PORT/state.json" | grep -q "200"; then
@@ -276,6 +280,42 @@ jobs:
           else
             echo "⚠️ Fixture server may not be accessible through tunnel"
             echo "This is expected if the tunnel is still establishing"
+          fi
+          
+          # Test fixture server accessibility through tunnel
+          echo "=== Testing Fixture Server Through Tunnel ==="
+          
+          # Start fixture server in background for testing
+          echo "Starting fixture server for testing..."
+          node -e "
+            const FixtureServer = require('./e2e/fixtures/fixture-server');
+            const { startFixtureServer, loadFixture } = require('./e2e/fixtures/fixture-helper');
+            const FixtureBuilder = require('./e2e/fixtures/fixture-builder');
+            
+            const fixtureServer = new FixtureServer();
+            const state = new FixtureBuilder().withProfileSyncingEnabled().build();
+            
+            startFixtureServer(fixtureServer)
+              .then(() => loadFixture(fixtureServer, { state }))
+              .then(() => {
+                console.log('Fixture server started successfully');
+                process.exit(0);
+              })
+              .catch(error => {
+                console.error('Failed to start fixture server:', error);
+                process.exit(1);
+              });
+          " &
+          
+          # Wait for fixture server to start
+          sleep 10
+          
+          # Test local access again after starting
+          echo "Testing local fixture server access after startup..."
+          if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$FIXTURE_PORT/state.json" | grep -q "200"; then
+            echo "✅ Local fixture server is accessible after startup"
+          else
+            echo "❌ Local fixture server is not accessible after startup"
           fi
           
           # Stop the test fixture server
