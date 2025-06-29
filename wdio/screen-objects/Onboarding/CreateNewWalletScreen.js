@@ -75,11 +75,13 @@ class CreateNewWalletScreen {
 
   async isAccountCreated() {
     await driver.pause(5000);
-    await expect(this.secureWalletScreen).toBeDisplayed();
+    const element = await this.secureWalletScreen;
+    await expect(element).toBeDisplayed();
   }
 
   async isNewAccountScreenFieldsVisible() {
-    await expect(this.newWalletPasswordField).toBeDisplayed();
+    const element = await this.newWalletPasswordField;
+    await expect(element).toBeDisplayed();
   }
 
   async isNotVisible() {

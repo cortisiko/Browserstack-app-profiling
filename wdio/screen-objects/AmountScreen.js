@@ -30,7 +30,8 @@ class AmountScreen {
   }
 
   async isTokenCorrect(token) {
-    expect(this.confirmAmount).toHaveText(token);
+    const element = await this.amountInputField;
+    await expect(element).toHaveText(token);
   }
 
   async waitForAmountErrorMessage() {

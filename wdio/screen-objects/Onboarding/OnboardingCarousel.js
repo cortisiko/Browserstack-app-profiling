@@ -61,11 +61,13 @@ class WelcomeScreen {
   }
 
   async isScreenDisplayed() {
-    expect(this.screen).toBeDisplayed();
+    const element = await this.screen;
+    await expect(element).toBeDisplayed();
   }
 
   async isGetStartedButtonDisplayed() {
-    expect(this.getStartedButton).toBeDisplayed();
+    const element = await this.getStartedButton;
+    await expect(element).toBeDisplayed();
   }
 
   async waitForSplashAnimationToNotExit() {
@@ -105,7 +107,7 @@ class WelcomeScreen {
     const element = await this.screen;
     this.CAROUSEL_RECTANGLES =
       this.CAROUSEL_RECTANGLES ||
-      (await driver.getElementRect(element.elementId));
+      (await element.getRect());
 
     return this.CAROUSEL_RECTANGLES;
   }

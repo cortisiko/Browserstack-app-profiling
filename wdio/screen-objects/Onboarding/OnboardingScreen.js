@@ -32,7 +32,8 @@ class OnBoardingScreen {
   }
 
   async isScreenTitleVisible() {
-    await expect(this.title).toBeDisplayed();
+    const element = await this.title;
+    await expect(element).toBeDisplayed();
   }
 
   async clickImportWalletButton() {
