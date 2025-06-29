@@ -261,7 +261,15 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const comment = `${{ steps.profiling-comment.outputs.comment }}`;
+            // Read the comment from the file
+            const fs = require('fs');
+            let comment;
+            
+            try {
+              comment = fs.readFileSync('comment.txt', 'utf8');
+            } catch (error) {
+              comment = '## ❌ Error Reading AppProfiling Data\n\nCould not read profiling data from file.';
+            }
             
             // Check if there's already a comment from this workflow
             const { data: comments } = await github.rest.issues.listComments({
