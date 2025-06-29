@@ -114,6 +114,14 @@ config.before = async function (capabilities: any, specs: any, browser: any) {
   console.log('=== before called ===');
   console.log('Browser object:', browser);
   
+  // Debug BrowserStack local tunnel configuration
+  console.log('=== BrowserStack Local Tunnel Debug ===');
+  console.log('GITHUB_RUN_ID:', process.env.GITHUB_RUN_ID);
+  console.log('BROWSERSTACK_LOCAL_IDENTIFIER:', process.env.BROWSERSTACK_LOCAL_IDENTIFIER);
+  console.log('BROWSERSTACK_LOCAL:', process.env.BROWSERSTACK_LOCAL);
+  console.log('BROWSERSTACK_USERNAME:', process.env.BROWSERSTACK_USERNAME ? 'SET' : 'NOT SET');
+  console.log('BROWSERSTACK_ACCESS_KEY:', process.env.BROWSERSTACK_ACCESS_KEY ? 'SET' : 'NOT SET');
+  
   try {
     // Get the actual BrowserStack session ID from the driver
     const sessionCapabilities = await browser.getSession();

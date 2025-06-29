@@ -45,6 +45,7 @@ class BrowserStackAPI {
 
       const data = await response.json();
       console.log(`Session details response data keys:`, Object.keys(data));
+      console.log(`Session details full response:`, JSON.stringify(data, null, 2));
       return data;
     } catch (error) {
       console.error('Error getting session details:', error);
@@ -227,12 +228,13 @@ class BrowserStackAPI {
       // Get session details to extract the build ID
       const sessionDetails = await this.getSessionDetails(currentSessionId);
       
-      if (!sessionDetails || !sessionDetails.build_hashed_id) {
+      if (!sessionDetails || !sessionDetails.automation_session || !sessionDetails.automation_session.build_hashed_id) {
         console.log('Could not get session details or build ID');
+        console.log('Session details structure:', JSON.stringify(sessionDetails, null, 2));
         return null;
       }
       
-      const buildId = sessionDetails.build_hashed_id;
+      const buildId = sessionDetails.automation_session.build_hashed_id;
       console.log(`Build ID: ${buildId}`);
       
       // Get app profiling data for this specific session

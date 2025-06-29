@@ -9,12 +9,12 @@ class Selectors {
     if (typeof driver.getPlatform === 'function') {
       platform = await driver.getPlatform();
     } else {
-      // Fallback: try to get platform from session
+      // Fallback: try to get platform from browser capabilities
       try {
-        const session = await browser.getSession();
+        const session = browser.capabilities;
         platform = session.platformName;
       } catch (error) {
-        // If that fails, assume Android for BrowserStack tests
+        console.warn('Failed to get platform from browser capabilities:', error.message);
         platform = 'Android';
       }
     }

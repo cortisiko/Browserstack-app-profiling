@@ -20,6 +20,7 @@ Feature: Profiling the various Lists
     And I type in my SRP 
     And I tap on button with text "Import Secret Recovery Phrase"
     And I tap on button with text "Continue"
+    And I wait 
     # And I tap on the Identicon
     # And I tap on button with text "Account 7"
     # And I tap on the Identicon
