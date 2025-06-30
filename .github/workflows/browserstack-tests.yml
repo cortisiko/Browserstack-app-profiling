@@ -256,8 +256,12 @@ jobs:
           # Test local access
           echo "Testing local fixture server access..."
           
-          # Use the fixed fixture server port
-          FIXTURE_PORT=14939
+          # Get the correct fixture server port (simplified approach)
+          # In CI, the port is transformed based on process.pid
+          DEFAULT_PORT=12345
+          PID=$(echo $$)
+          FIXTURE_PORT=$(( (PID % 100000) + DEFAULT_PORT ))
+          FIXTURE_PORT=$(( FIXTURE_PORT % 65536 ))
           echo "Fixture server port: $FIXTURE_PORT"
           
           if curl -s -o /dev/null -w "%{http_code}" "http://localhost:$FIXTURE_PORT/state.json" | grep -q "200"; then
