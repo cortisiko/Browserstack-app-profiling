@@ -283,7 +283,7 @@ jobs:
           
           # Test local access
           echo "Testing local fixture server access..."
-          if curl -s -o /dev/null -w "%{http_code}" http://localhost:12345/state.json | grep -q "200"; then
+          if curl -s -o /dev/null -w "%{http_code}" http://localhost:12345/status | grep -q "200"; then
             echo "✅ Local fixture server is accessible"
           else
             echo "❌ Local fixture server is not accessible"
@@ -291,7 +291,7 @@ jobs:
           
           # Test through BrowserStack tunnel (using the tunnel's local identifier)
           echo "Testing fixture server through BrowserStack tunnel..."
-          TUNNEL_URL="http://$BROWSERSTACK_LOCAL_IDENTIFIER.localhost.run:12345/state.json"
+          TUNNEL_URL="http://$BROWSERSTACK_LOCAL_IDENTIFIER.localhost.run:12345/status"
           echo "Tunnel URL: $TUNNEL_URL"
           
           if curl -s -o /dev/null -w "%{http_code}" "$TUNNEL_URL" | grep -q "200"; then

@@ -13,10 +13,10 @@ Given('I start the fixture server with login state', async function() {
   // Check if fixture server is running before starting
   console.log('=== Checking Fixture Server Status ===');
   try {
-    const statusResponse = await fetch('http://localhost:12345/state.json');
+    const statusResponse = await fetch('http://localhost:12345/status');
     if (statusResponse.ok) {
       const status = await statusResponse.json();
-      console.log('✅ Fixture server is already running with state:', Object.keys(status));
+      console.log('✅ Fixture server is already running:', status);
     } else {
       console.log('⚠️ Fixture server responded with status:', statusResponse.status);
     }
@@ -35,29 +35,6 @@ Given('I start the fixture server with login state', async function() {
   process.argv.includes('android.config.browserstack.js')
 
   console.log('isBrowserStack', isBrowserStack);
-  
-  // Additional debugging for fixture server
-  console.log('=== Fixture Server Debug Info ===');
-  console.log('Fixture server instance:', !!fixtureServer);
-  console.log('Fixture server port:', fixtureServer.port || 'unknown');
-  console.log('Fixture server URL:', fixtureServer.url || 'unknown');
-  
-  // Check if fixture server is actually running
-  try {
-    const serverStatus = await fixtureServer.isRunning();
-    console.log('Fixture server isRunning():', serverStatus);
-  } catch (statusError) {
-    console.log('Could not check fixture server status:', statusError.message);
-  }
-  
-  // Try to get the actual port being used
-  try {
-    const utils = await import('../../e2e/fixtures/utils.js');
-    const port = utils.getFixturesServerPort();
-    console.log('Fixture server port from utils:', port);
-  } catch (utilsError) {
-    console.log('Could not get port from utils:', utilsError.message);
-  }
   
   // Verify fixture state is loaded by making a curl request
   console.log('=== Verifying Fixture State ===');
@@ -100,12 +77,7 @@ Given('I start the fixture server with login state', async function() {
   // Test fixture server accessibility from device perspective
   console.log('=== Testing Fixture Server from Device ===');
   try {
-    // Get platform using the correct method
-    const capabilities = await driver.getAppiumSessionCapabilities();
-    const platform = capabilities.platformName || capabilities.platform;
-    console.log('Device platform:', platform);
-    
-    if (platform === 'Android') {
+    if (await driver.getPlatform() === 'Android') {
       // For Android, use ADB shell curl to test from device perspective
       const adb = await ADB.createADB();
       
@@ -113,7 +85,7 @@ Given('I start the fixture server with login state', async function() {
       console.log('Testing fixture server from Android device...');
       
       // Try to curl the fixture server from the device
-      const curlResult = await adb.shell('curl -s -o /dev/null -w "%{http_code}" http://localhost:12345/state.json');
+      const curlResult = await adb.shell('curl -s -o /dev/null -w "%{http_code}" http://localhost:12345/status');
       console.log('Device curl result:', curlResult);
       
       if (curlResult.trim() === '200') {
@@ -124,7 +96,7 @@ Given('I start the fixture server with login state', async function() {
       
       // Also try to get the actual response
       try {
-        const responseData = await adb.shell('curl -s http://localhost:12345/state.json');
+        const responseData = await adb.shell('curl -s http://localhost:12345/status');
         console.log('Device fixture server response:', responseData);
       } catch (curlError) {
         console.log('Could not get response data from device:', curlError.message);
