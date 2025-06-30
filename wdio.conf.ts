@@ -342,9 +342,6 @@ export const config: Options.Testrunner = {
     (global as any).driver.getPlatform = function getPlatform() {
       return capabilities.platformName;
     };
-    const fixture = new FixtureBuilder().withProfileSyncingEnabled().build();
-    await startFixtureServer(fixtureServer);
-    await loadFixture(fixtureServer, { fixture });    
 
     // if (await driver.getPlatform() === 'Android') {
     //   const adb = await ADB.createADB();
