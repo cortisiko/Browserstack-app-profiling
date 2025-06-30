@@ -8,12 +8,7 @@ import ADB from 'appium-adb';
 
 
 Given('I start the fixture server with login state', async function() {
-  console.log('=== Building Fixture State ===');
   const state = new FixtureBuilder().withProfileSyncingEnabled().build();
-  console.log('Fixture state built, keys:', Object.keys(state));
-  console.log('Fixture state has engine:', !!state.engine);
-  console.log('Fixture state has user:', !!state.user);
-  console.log('Fixture state has asyncState:', !!state.asyncState);
   
   // Get the fixture server port from utils (now returns fixed port 14939)
   let fixturePort = 14939; // fallback
@@ -74,12 +69,6 @@ Given('I start the fixture server with login state', async function() {
       console.log('✅ Fixture server is accessible and responding');
       console.log('Fixture state keys:', Object.keys(fixtureData));
       
-      // Check if fixture data is properly loaded
-      if (Object.keys(fixtureData).length === 1 && fixtureData.asyncState && Object.keys(fixtureData.asyncState).length === 0) {
-        console.log('❌ WARNING: Fixture data appears to be empty! Only empty asyncState found.');
-        console.log('This suggests the fixture was not loaded properly.');
-      }
-      
       // Log some key fixture data for debugging
       if (fixtureData.engine) {
         console.log('Engine state loaded:', !!fixtureData.engine);
@@ -131,14 +120,9 @@ Given('I start the fixture server with login state', async function() {
   // Test fixture server accessibility from device perspective
   console.log('=== Testing Fixture Server from Device ===');
   try {
-    // Get platform using BrowserStack-compatible method
-    let platform = 'Android'; // default
-    try {
-      const session = await driver.getSession();
-      platform = session.platformName || session.platform || 'Android';
-    } catch (sessionError) {
-      console.log('Could not get session info, using default platform:', sessionError.message);
-    }
+    // Get platform using the correct method
+    const capabilities = await driver.getAppiumSessionCapabilities();
+    const platform = capabilities.platformName || capabilities.platform;
     console.log('Device platform:', platform);
     
     if (platform === 'Android') {
@@ -176,9 +160,28 @@ Given('I start the fixture server with login state', async function() {
   console.log('=== Restarting App with Fixture Server Port ===');
   console.log(`Using fixture server port: ${fixturePort}`);
   
-
+  try {
+    // Terminate the current app
+    await driver.terminateApp(bundleId);
+    await driver.pause(2000);
     
-
+    // Launch the app with fixture server port argument
+    await driver.executeScript('mobile:launchApp', [
+      {
+        bundleId,
+        arguments: [`fixtureServerPort=${fixturePort}`],
+        environment: {
+          fixtureServerPort: `${fixturePort}`,
+        },
+      },
+    ]);
+    
+    console.log(`✅ App restarted with fixture server port: ${fixturePort}`);
+    await driver.pause(3000);
+  } catch (launchError) {
+    console.log('⚠️ Could not restart app with fixture server port:', launchError.message);
+    console.log('App may already be using the correct port or restart not needed');
+  }
   
   // Wait for fixture server to be ready
   await driver.pause(3000);
@@ -188,13 +191,8 @@ Given('I start the fixture server with login state', async function() {
   console.log('=== Verifying App Access to Fixture Server ===');
   try {
     // Test if the app can access the fixture server through the tunnel
-    let platform = 'Android'; // default
-    try {
-      const session = await driver.getSession();
-      platform = session.platformName || session.platform || 'Android';
-    } catch (sessionError) {
-      console.log('Could not get session info, using default platform:', sessionError.message);
-    }
+    const capabilities = await driver.getAppiumSessionCapabilities();
+    const platform = capabilities.platformName || capabilities.platform;
     
     if (platform === 'Android') {
       const adb = await ADB.createADB();
