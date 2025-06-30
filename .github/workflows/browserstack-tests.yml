@@ -252,57 +252,6 @@ jobs:
             echo "❌ BrowserStack Local PID file not found"
             exit 1
           fi
-          
-          # Test fixture server accessibility through tunnel
-          echo "=== Testing Fixture Server Through Tunnel ==="
-          
-          # Start fixture server in background for testing
-          echo "Starting fixture server for testing..."
-          node -e "
-            const FixtureServer = require('./e2e/fixtures/fixture-server');
-            const { startFixtureServer, loadFixture } = require('./e2e/fixtures/fixture-helper');
-            const FixtureBuilder = require('./e2e/fixtures/fixture-builder');
-            
-            const fixtureServer = new FixtureServer();
-            const state = new FixtureBuilder().withProfileSyncingEnabled().build();
-            
-            startFixtureServer(fixtureServer)
-              .then(() => loadFixture(fixtureServer, { state }))
-              .then(() => {
-                console.log('Fixture server started successfully');
-                process.exit(0);
-              })
-              .catch(error => {
-                console.error('Failed to start fixture server:', error);
-                process.exit(1);
-              });
-          " &
-          
-          # Wait for fixture server to start
-          sleep 10
-          
-          # Test local access
-          echo "Testing local fixture server access..."
-          if curl -s -o /dev/null -w "%{http_code}" http://localhost:12345/status | grep -q "200"; then
-            echo "✅ Local fixture server is accessible"
-          else
-            echo "❌ Local fixture server is not accessible"
-          fi
-          
-          # Test through BrowserStack tunnel (using the tunnel's local identifier)
-          echo "Testing fixture server through BrowserStack tunnel..."
-          TUNNEL_URL="http://$BROWSERSTACK_LOCAL_IDENTIFIER.localhost.run:12345/status"
-          echo "Tunnel URL: $TUNNEL_URL"
-          
-          if curl -s -o /dev/null -w "%{http_code}" "$TUNNEL_URL" | grep -q "200"; then
-            echo "✅ Fixture server is accessible through BrowserStack tunnel"
-          else
-            echo "⚠️ Fixture server may not be accessible through tunnel"
-            echo "This is expected if the tunnel is still establishing"
-          fi
-          
-          # Stop the test fixture server
-          pkill -f "node.*fixture-server" || true
 
       - name: Run Android Performance Tests
         env:
