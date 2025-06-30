@@ -125,11 +125,6 @@ class FixtureServer {
   _isStateRequest(ctx) {
     return ctx.method === 'GET' && ctx.path === '/state.json';
   }
-
-  // Check if the server is running
-  isRunning() {
-    return this._server && this._server.listening;
-  }
 }
 
 export default FixtureServer;

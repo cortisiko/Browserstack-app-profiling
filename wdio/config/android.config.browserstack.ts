@@ -38,9 +38,6 @@ const defaultCapabilities = [
         "appProfiling" : "true",
         "local": "true",
         "localIdentifier": process.env.GITHUB_RUN_ID,
-        "networkLogs": "true",
-        "deviceLogs": "true",
-        "debug": "true"
     }
   }
 ];
@@ -61,9 +58,7 @@ const upgradeCapabilities = [
       "local": "true",
       "debug": true,
       "localIdentifier": process.env.GITHUB_RUN_ID,
-      "midSessionInstallApps" : [process.env.BROWSERSTACK_ANDROID_APP_URL],
-      "networkLogs": "true",
-      "deviceLogs": "true"
+      "midSessionInstallApps" : [process.env.BROWSERSTACK_ANDROID_APP_URL]
   },
   },
 ];

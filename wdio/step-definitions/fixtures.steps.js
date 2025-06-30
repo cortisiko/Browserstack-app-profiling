@@ -15,22 +15,6 @@ Given('I start the fixture server with login state', async function() {
   console.log('Fixture state has user:', !!state.user);
   console.log('Fixture state has asyncState:', !!state.asyncState);
   
-  // Debug fixture state structure
-  if (state.engine) {
-    console.log('Engine state structure:', Object.keys(state.engine));
-    if (state.engine.backgroundState) {
-      console.log('Background state controllers:', Object.keys(state.engine.backgroundState));
-    }
-  }
-  
-  if (state.user) {
-    console.log('User state structure:', Object.keys(state.user));
-  }
-  
-  if (state.asyncState) {
-    console.log('Async state structure:', Object.keys(state.asyncState));
-  }
-  
   // Get the fixture server port from utils (now returns fixed port 14939)
   let fixturePort = 14939; // fallback
   try {
@@ -55,37 +39,8 @@ Given('I start the fixture server with login state', async function() {
     console.log('ℹ️ Fixture server not running yet (this is expected)');
   }
   
-  // Also check bs-local.com for BrowserStack compatibility
-  try {
-    const bsStatusResponse = await fetch(`http://bs-local.com:${fixturePort}/state.json`);
-    if (bsStatusResponse.ok) {
-      const bsStatus = await bsStatusResponse.json();
-      console.log('✅ Fixture server accessible via bs-local.com with state:', Object.keys(bsStatus));
-    } else {
-      console.log('⚠️ Fixture server via bs-local.com responded with status:', bsStatusResponse.status);
-    }
-  } catch (bsError) {
-    console.log('ℹ️ Fixture server not accessible via bs-local.com yet (this is expected)');
-  }
-  
-  console.log('=== Starting Fixture Server ===');
-  try {
-    await startFixtureServer(fixtureServer);
-    console.log('✅ Fixture server started successfully');
-  } catch (startError) {
-    console.log('❌ Failed to start fixture server:', startError.message);
-    throw startError;
-  }
-  
-  console.log('=== Loading Fixture State ===');
-  try {
-    await loadFixture(fixtureServer, { state });
-    console.log('✅ Fixture state loaded successfully');
-  } catch (loadError) {
-    console.log('❌ Failed to load fixture state:', loadError.message);
-    throw loadError;
-  }
-  
+  await startFixtureServer(fixtureServer);
+  await loadFixture(fixtureServer, { state });
   await driver.pause(5000);
   const bundleId = 'io.metamask.qa';
 
@@ -104,7 +59,7 @@ Given('I start the fixture server with login state', async function() {
   
   // Check if fixture server is actually running
   try {
-    const serverStatus = fixtureServer.isRunning ? fixtureServer.isRunning() : 'method not available';
+    const serverStatus = await fixtureServer.isRunning();
     console.log('Fixture server isRunning():', serverStatus);
   } catch (statusError) {
     console.log('Could not check fixture server status:', statusError.message);
@@ -171,20 +126,6 @@ Given('I start the fixture server with login state', async function() {
     console.log('  1. Fixture server is not running');
     console.log(`  2. Port ${fixturePort} is blocked`);
     console.log('  3. BrowserStack tunnel is not working');
-  }
-  
-  // Also check bs-local.com for BrowserStack compatibility
-  try {
-    const bsResponse = await fetch(`http://bs-local.com:${fixturePort}/state.json`);
-    if (bsResponse.ok) {
-      const bsFixtureData = await bsResponse.json();
-      console.log('✅ Fixture server accessible via bs-local.com');
-      console.log('bs-local.com fixture state keys:', Object.keys(bsFixtureData));
-    } else {
-      console.log('⚠️ bs-local.com fixture server responded with status:', bsResponse.status);
-    }
-  } catch (bsError) {
-    console.log('❌ Could not access fixture server via bs-local.com:', bsError.message);
   }
   
   // Test fixture server accessibility from device perspective
