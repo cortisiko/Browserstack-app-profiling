@@ -266,9 +266,26 @@ jobs:
             echo "❌ Local fixture server is not accessible"
           fi
           
+          # Test bs-local.com access (BrowserStack requirement)
+          if curl -s -o /dev/null -w "%{http_code}" "http://bs-local.com:$FIXTURE_PORT/state.json" | grep -q "200"; then
+            echo "✅ Fixture server is accessible via bs-local.com"
+          else
+            echo "❌ Fixture server is not accessible via bs-local.com"
+          fi
+          
           # Test through BrowserStack tunnel (using the tunnel's local identifier)
           echo "Testing fixture server through BrowserStack tunnel..."
-          TUNNEL_URL="http://$BROWSERSTACK_LOCAL_IDENTIFIER.localhost.run:$FIXTURE_PORT/state.json"
+          echo "BROWSERSTACK_LOCAL_IDENTIFIER: '$BROWSERSTACK_LOCAL_IDENTIFIER'"
+          echo "github.run_id: '${{ github.run_id }}'"
+          
+          # Ensure we have a valid local identifier
+          if [ -z "$BROWSERSTACK_LOCAL_IDENTIFIER" ]; then
+            echo "❌ BROWSERSTACK_LOCAL_IDENTIFIER is empty, using fallback"
+            BROWSERSTACK_LOCAL_IDENTIFIER="test-run-$(date +%s)"
+          fi
+          
+          # Use bs-local.com instead of localhost.run (BrowserStack requirement)
+          TUNNEL_URL="http://bs-local.com:$FIXTURE_PORT/state.json"
           echo "Tunnel URL: $TUNNEL_URL"
           
           if curl -s -o /dev/null -w "%{http_code}" "$TUNNEL_URL" | grep -q "200"; then
@@ -284,23 +301,28 @@ jobs:
           # Start fixture server in background for testing
           echo "Starting fixture server for testing..."
           node -e "
-            const FixtureServer = require('./e2e/fixtures/fixture-server');
-            const { startFixtureServer, loadFixture } = require('./e2e/fixtures/fixture-helper');
-            const FixtureBuilder = require('./e2e/fixtures/fixture-builder');
-            
-            const fixtureServer = new FixtureServer();
-            const state = new FixtureBuilder().withProfileSyncingEnabled().build();
-            
-            startFixtureServer(fixtureServer)
-              .then(() => loadFixture(fixtureServer, { state }))
-              .then(() => {
-                console.log('Fixture server started successfully');
-                process.exit(0);
-              })
-              .catch(error => {
-                console.error('Failed to start fixture server:', error);
-                process.exit(1);
+            import('./e2e/fixtures/fixture-server.js').then(({ default: FixtureServer }) => {
+              return import('./e2e/fixtures/fixture-helper.js').then(({ startFixtureServer, loadFixture }) => {
+                return import('./e2e/fixtures/fixture-builder.js').then(({ default: FixtureBuilder }) => {
+                  const fixtureServer = new FixtureServer();
+                  const state = new FixtureBuilder().withProfileSyncingEnabled().build();
+                  
+                  return startFixtureServer(fixtureServer)
+                    .then(() => loadFixture(fixtureServer, { state }))
+                    .then(() => {
+                      console.log('Fixture server started successfully');
+                      process.exit(0);
+                    })
+                    .catch(error => {
+                      console.error('Failed to start fixture server:', error);
+                      process.exit(1);
+                    });
+                });
               });
+            }).catch(error => {
+              console.error('Failed to import modules:', error);
+              process.exit(1);
+            });
           " &
           
           # Wait for fixture server to start
@@ -312,6 +334,13 @@ jobs:
             echo "✅ Local fixture server is accessible after startup"
           else
             echo "❌ Local fixture server is not accessible after startup"
+          fi
+          
+          # Test bs-local.com access after startup
+          if curl -s -o /dev/null -w "%{http_code}" "http://bs-local.com:$FIXTURE_PORT/state.json" | grep -q "200"; then
+            echo "✅ Fixture server is accessible via bs-local.com after startup"
+          else
+            echo "❌ Fixture server is not accessible via bs-local.com after startup"
           fi
           
           # Stop the test fixture server

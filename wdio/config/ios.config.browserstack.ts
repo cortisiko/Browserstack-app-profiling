@@ -28,7 +28,10 @@ const defaultCapabilities = [
     "local": "true",
     "localIdentifier": process.env.GITHUB_RUN_ID,
     "interactiveDebugging": true,
-    "buildName": "iOS App Launch Times Tests"
+    "buildName": "iOS App Launch Times Tests",
+    "networkLogs": "true",
+    "deviceLogs": "true",
+    "debug": "true"
   }
 }
 
@@ -50,6 +53,9 @@ const upgradeCapabilities = [
       buildName: 'iOS App Upgrade E2E',
       local: 'true',
       localIdentifier: process.env.GITHUB_RUN_ID,
+      networkLogs: "true",
+      deviceLogs: "true",
+      debug: "true"
     },
   },
 ];
