@@ -226,11 +226,168 @@ function formatMultipleProfilingFiles(reportsDir = './wdio/reports') {
   }
 }
 
+/**
+ * Format individual profiling files as separate comments for parallel sessions
+ * @param {string} reportsDir - Reports directory path
+ * @returns {Array} Array of formatted comments with session info
+ */
+function formatIndividualProfilingComments(reportsDir = './wdio/reports') {
+  try {
+    const files = fs.readdirSync(reportsDir)
+      .filter(file => file.startsWith('profiling-data-') && file.endsWith('.json'))
+      .map(file => ({
+        name: file,
+        path: path.join(reportsDir, file),
+        mtime: fs.statSync(path.join(reportsDir, file)).mtime
+      }))
+      .sort((a, b) => b.mtime - a.mtime);
+    
+    if (files.length === 0) {
+      return [{
+        sessionId: 'unknown',
+        device: 'unknown',
+        comment: '## ❌ No AppProfiling Data Available\n\nNo profiling data was collected during this test run.'
+      }];
+    }
+    
+    const comments = [];
+    
+    files.forEach(file => {
+      try {
+        const data = JSON.parse(fs.readFileSync(file.path, 'utf8'));
+        const { metadata, data: profilingData, currentSession } = data;
+        const appData = profilingData['io.metamask.qa'];
+        
+        if (!appData) {
+          comments.push({
+            sessionId: currentSession?.sessionId || 'unknown',
+            device: metadata?.device || 'unknown',
+            comment: `## ❌ Error Processing AppProfiling Data\n\nNo app data found in profiling results for file: ${file.name}`
+          });
+          return;
+        }
+        
+        // Build the GitHub comment for this individual session
+        let comment = '## 📊 AppProfiling Metrics :chart_with_upwards_trend:\n\n';
+        
+        // Session information
+        comment += `**Session ID:** \`${currentSession.sessionId}\`\n`;
+        comment += `**BrowserStack Session:** [View Session](https://app-automate.browserstack.com/builds/${currentSession.buildId}/sessions/${currentSession.sessionId})\n\n`;
+        
+        // Device information
+        comment += `**Device:** ${metadata.device} (${metadata.os_version})\n`;
+        comment += `**Test Date:** ${new Date(metadata.created_at).toLocaleString()}\n\n`;
+        
+        // Detected Issues
+        if (appData.detected_issues && appData.detected_issues.length > 0) {
+          comment += '### ⚠️ Detected Issues\n\n';
+          
+          appData.detected_issues.forEach((issue, index) => {
+            const emoji = issue.type === 'error' ? '🔴' : '🟡';
+            comment += `${emoji} **${issue.title}**\n`;
+            comment += `   - ${issue.subtitle}\n`;
+            comment += `   - Current: ${issue.current} ${issue.unit}\n`;
+            comment += `   - Recommended: ${issue.recommended} ${issue.unit}\n`;
+            comment += `   - [Learn More](${issue.link})\n\n`;
+          });
+        } else {
+          comment += '### ✅ No Issues Detected\n\n';
+        }
+        
+        // Performance Metrics
+        comment += '### 📈 Performance Metrics\n\n';
+        
+        const metrics = appData.metrics;
+        const units = data.units;
+        
+        // App Size
+        comment += `**App Size:** ${metrics.app_size} ${units.app_size}\n\n`;
+        
+        // CPU Usage
+        comment += `**CPU Usage:**\n`;
+        comment += `   - Average: ${metrics.cpu.avg}${units.cpu}\n`;
+        comment += `   - Maximum: ${metrics.cpu.max}${units.cpu}\n\n`;
+        
+        // Memory Usage
+        comment += `**Memory Usage:**\n`;
+        comment += `   - Average: ${metrics.mem.avg} ${units.mem}\n`;
+        comment += `   - Maximum: ${metrics.mem.max} ${units.mem}\n\n`;
+        
+        // Battery Usage
+        if (metrics.batt.total_batt_usage_pct !== null) {
+          comment += `**Battery Usage:** ${metrics.batt.total_batt_usage_pct}%\n\n`;
+        }
+        
+        // Disk I/O
+        comment += `**Disk I/O:**\n`;
+        comment += `   - Total Reads: ${metrics.diskio.total_reads} ${units.diskio}\n`;
+        comment += `   - Total Writes: ${metrics.diskio.total_writes} ${units.diskio}\n\n`;
+        
+        // Network I/O
+        comment += `**Network I/O:**\n`;
+        comment += `   - Total Upload: ${metrics.networkio.total_upload} ${units.networkio}\n`;
+        comment += `   - Total Download: ${metrics.networkio.total_download} ${units.networkio}\n\n`;
+        
+        // UI Rendering
+        comment += `**UI Rendering:**\n`;
+        comment += `   - Slow Frames: ${metrics.ui_rendering.slow_frames_pct}%\n`;
+        comment += `   - Frozen Frames: ${metrics.ui_rendering.frozen_frames_pct}%\n`;
+        comment += `   - ANRs: ${metrics.ui_rendering.num_anrs}\n\n`;
+        
+        // Screen Load Times
+        if (metrics.screen_load.activity_load_time && metrics.screen_load.activity_load_time.length > 0) {
+          comment += `**Screen Load Times:**\n`;
+          metrics.screen_load.activity_load_time.forEach(activity => {
+            activity.load_time_data.forEach(loadTime => {
+              comment += `   - ${activity.name}: ${loadTime.load_time} ${units.screen_load}\n`;
+            });
+          });
+          comment += '\n';
+        }
+        
+        // Additional Links
+        comment += '### 🔗 Detailed Reports\n\n';
+        comment += `- [CPU Usage Data](${metrics.cpu.cpu_usage_data})\n`;
+        comment += `- [Memory Usage Data](${metrics.mem.mem_usage_data})\n`;
+        comment += `- [Battery Usage Data](${metrics.batt.batt_usage_data})\n`;
+        comment += `- [Disk Usage Data](${metrics.diskio.disk_usage_data})\n`;
+        comment += `- [Network Usage Data](${metrics.networkio.network_usage_data})\n`;
+        comment += `- [FPS Data](${metrics.ui_rendering.fps_data})\n`;
+        
+        comments.push({
+          sessionId: currentSession.sessionId,
+          device: metadata.device,
+          comment: comment
+        });
+        
+      } catch (error) {
+        console.warn(`Error processing file ${file.path}:`, error.message);
+        comments.push({
+          sessionId: 'unknown',
+          device: 'unknown',
+          comment: `## ❌ Error Processing AppProfiling Data\n\nError processing file ${file.name}: ${error.message}`
+        });
+      }
+    });
+    
+    return comments;
+    
+  } catch (error) {
+    console.error('Error formatting individual profiling comments:', error);
+    return [{
+      sessionId: 'unknown',
+      device: 'unknown',
+      comment: `## ❌ Error Processing AppProfiling Data\n\nError: ${error.message}`
+    }];
+  }
+}
+
 // Export for use in other modules
 module.exports = {
   formatProfilingComment,
   findLatestProfilingFile,
-  formatMultipleProfilingFiles
+  formatMultipleProfilingFiles,
+  formatIndividualProfilingComments
 };
 
 // Run if called directly

@@ -224,90 +224,95 @@ jobs:
         run: |
           yarn test:wdio:android:browserstack --performance
 
-      - name: Generate AppProfiling Comment
-        id: profiling-comment
+      - name: Generate Individual AppProfiling Comments
+        id: profiling-comments
         if: always()
         run: |
           # Check if profiling data exists
           if [ -d "wdio/reports" ]; then
             echo "Checking for profiling data in wdio/reports..."
             
-            # Use our enhanced script to handle multiple files
-            if node -e "const { formatMultipleProfilingFiles } = require('./wdio/utils/formatProfilingComment.js'); console.log(formatMultipleProfilingFiles());" 2>/dev/null; then
-              node -e "const { formatMultipleProfilingFiles } = require('./wdio/utils/formatProfilingComment.js'); console.log(formatMultipleProfilingFiles());" > comment.txt
+            # Generate individual comments for each session
+            if node -e "const { formatIndividualProfilingComments } = require('./wdio/utils/formatProfilingComment.js'); const comments = formatIndividualProfilingComments(); console.log(JSON.stringify(comments));" 2>/dev/null; then
+              node -e "const { formatIndividualProfilingComments } = require('./wdio/utils/formatProfilingComment.js'); const comments = formatIndividualProfilingComments(); console.log(JSON.stringify(comments));" > comments.json
+              echo "Generated individual comments for parallel sessions"
             else
-              # Fallback to finding latest file
-              LATEST_PROFILING_FILE=$(find wdio/reports -name "profiling-data-*.json" -type f -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -f2- -d" ")
-              
-              if [ -n "$LATEST_PROFILING_FILE" ] && [ -f "$LATEST_PROFILING_FILE" ]; then
-                echo "Found profiling file: $LATEST_PROFILING_FILE"
-                node wdio/utils/formatProfilingComment.js "$LATEST_PROFILING_FILE" > comment.txt
-              else
-                echo "No profiling data found"
-                echo "## ❌ No AppProfiling Data Available" > comment.txt
-                echo "" >> comment.txt
-                echo "No profiling data was collected during this test run." >> comment.txt
-              fi
+              echo "Error generating individual comments, creating fallback"
+              echo '[{"sessionId":"unknown","device":"unknown","comment":"## ❌ Error Generating AppProfiling Comments\\n\\nCould not generate individual comments for parallel sessions."}]' > comments.json
             fi
           else
             echo "Reports directory not found"
-            echo "## ❌ No AppProfiling Data Available" > comment.txt
-            echo "" >> comment.txt
-            echo "Reports directory not found. Tests may not have completed successfully." >> comment.txt
+            echo '[{"sessionId":"unknown","device":"unknown","comment":"## ❌ No AppProfiling Data Available\\n\\nReports directory not found. Tests may not have completed successfully."}]' > comments.json
           fi
           
-          # Read the comment and set it as output
-          COMMENT=$(cat comment.txt)
-          echo "comment<<EOF" >> $GITHUB_OUTPUT
-          echo "$COMMENT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # Count the number of comments
+          COMMENT_COUNT=$(node -e "const comments = JSON.parse(require('fs').readFileSync('comments.json', 'utf8')); console.log(comments.length);")
+          echo "comment_count=$COMMENT_COUNT" >> $GITHUB_OUTPUT
 
       - name: Comment on PR
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            // Read the comment from the file
+            // Read the individual comments from the file
             const fs = require('fs');
-            let comment;
+            let comments;
             
             try {
-              comment = fs.readFileSync('comment.txt', 'utf8');
+              comments = JSON.parse(fs.readFileSync('comments.json', 'utf8'));
             } catch (error) {
-              comment = '## ❌ Error Reading AppProfiling Data\n\nCould not read profiling data from file.';
+              console.error('Error reading comments file:', error);
+              comments = [{
+                sessionId: 'unknown',
+                device: 'unknown',
+                comment: '## ❌ Error Reading AppProfiling Data\n\nCould not read profiling data from file.'
+              }];
             }
             
-            // Check if there's already a comment from this workflow
-            const { data: comments } = await github.rest.issues.listComments({
+            console.log(`Processing ${comments.length} individual profiling comments`);
+            
+            // Get existing comments to check for duplicates
+            const { data: existingComments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
             
-            const existingComment = comments.find(comment => 
-              comment.user.login === 'github-actions[bot]' && 
-              comment.body.includes('AppProfiling Metrics')
-            );
-            
-            if (existingComment) {
-              // Update existing comment
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existingComment.id,
-                body: comment
-              });
-              console.log('Updated existing AppProfiling comment');
-            } else {
-              // Create new comment
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: comment
-              });
-              console.log('Created new AppProfiling comment');
+            // Process each individual comment
+            for (const profilingComment of comments) {
+              const { sessionId, device, comment } = profilingComment;
+              
+              // Create a unique identifier for this session's comment
+              const commentIdentifier = `AppProfiling-${sessionId}-${device}`;
+              
+              // Check if there's already a comment for this specific session
+              const existingComment = existingComments.find(existing => 
+                existing.user.login === 'github-actions[bot]' && 
+                existing.body.includes(`Session ID: \`${sessionId}\``)
+              );
+              
+              if (existingComment) {
+                // Update existing comment for this session
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existingComment.id,
+                  body: comment
+                });
+                console.log(`Updated existing AppProfiling comment for session ${sessionId} (${device})`);
+              } else {
+                // Create new comment for this session
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: comment
+                });
+                console.log(`Created new AppProfiling comment for session ${sessionId} (${device})`);
+              }
             }
+            
+            console.log(`Successfully processed ${comments.length} profiling comments`);
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

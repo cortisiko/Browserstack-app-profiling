@@ -13,6 +13,7 @@ Feature: Profile network list
  
   Scenario: Profile network list
     Given I have imported my wallet
+    And I dismiss the Solana New Feature Sheet
     And I am on the wallet view
     And I tap on the Identicon
     Then I am on the "Account 1" account
