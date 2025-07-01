@@ -14,28 +14,9 @@ config.key = process.env.BROWSERSTACK_ACCESS_KEY;
 const defaultCapabilities = [
 {
   "platformName": "iOS",
-  "maxInstances": 2,
+  "maxInstances": 1,
   "appium:deviceName": "iPhone 15 Pro",
   "appium:platformVersion": "17.3",
-  "appium:automationName": "XCUITest",
-  "appium:app": process.env.BROWSERSTACK_IOS_APP_URL,
-  "appium:noReset": false,
-  "appium:fullReset": false,
-  "appium:settings[snapshotMaxDepth]": 62,
-  "appium:settings[customSnapshotTimeout]": 50000,
-  "bstack:options": {
-    "appProfiling": "true",
-    "local": "true",
-    "localIdentifier": process.env.GITHUB_RUN_ID,
-    "interactiveDebugging": true,
-    "buildName": "iOS App Launch Times Tests"
-  }
-},
-{
-  "platformName": "iOS",
-  "maxInstances": 2,
-  "appium:deviceName": "iPhone 14",
-  "appium:platformVersion": "16.6",
   "appium:automationName": "XCUITest",
   "appium:app": process.env.BROWSERSTACK_IOS_APP_URL,
   "appium:noReset": false,
@@ -56,26 +37,9 @@ const defaultCapabilities = [
 const upgradeCapabilities = [
   {
     platformName: 'iOS',
-    maxInstances: 2,
+    maxInstances: 1,
     'appium:deviceName': process.env.BROWSERSTACK_DEVICE || 'iPhone 15 Pro',
     'appium:platformVersion': process.env.BROWSERSTACK_OS_VERSION || '17.3',
-    'appium:automationName': 'XCUITest',
-    'appium:app': process.env.PRODUCTION_APP_URL || process.env.BROWSERSTACK_IOS_APP_URL,
-    'appium:noReset': true,
-    // Optimal settings for React Native element detection
-    'appium:settings[snapshotMaxDepth]': 50,        // Reduced from 62 for better performance
-    'appium:settings[customSnapshotTimeout]': 20000, // Reduced from 50000 for faster detection
-    'bstack:options': {
-      buildName: 'iOS App Upgrade E2E',
-      local: 'true',
-      localIdentifier: process.env.GITHUB_RUN_ID,
-    },
-  },
-  {
-    platformName: 'iOS',
-    maxInstances: 2,
-    'appium:deviceName': process.env.BROWSERSTACK_DEVICE || 'iPhone 14',
-    'appium:platformVersion': process.env.BROWSERSTACK_OS_VERSION || '16.6',
     'appium:automationName': 'XCUITest',
     'appium:app': process.env.PRODUCTION_APP_URL || process.env.BROWSERSTACK_IOS_APP_URL,
     'appium:noReset': true,

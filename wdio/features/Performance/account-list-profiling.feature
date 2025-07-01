@@ -13,7 +13,6 @@ Feature: Profile the account list after importing multiple SRPs
  
   Scenario: Profile the account list after importing multiple SRPs
     Given I have imported my wallet
-    And I dismiss the Solana New Feature Sheet
     And I am on the wallet screen
     And I tap on the Identicon
     Then I am on the "Account 1" account
