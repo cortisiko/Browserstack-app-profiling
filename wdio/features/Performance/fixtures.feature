@@ -1,4 +1,4 @@
-@temp @androidApp @performance @iosApp
+@androidApp @performance @iosApp
 # @performance
 
 Feature: Profiling the various Lists
