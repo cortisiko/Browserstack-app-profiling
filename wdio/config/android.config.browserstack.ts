@@ -22,7 +22,7 @@ config.exclude = [];
 
 // Remove the complex exclude patterns - let tag filtering handle it
 // config.exclude = [...];
-
+// test commit
 // Define capabilities for regular tests
 const defaultCapabilities = [
   {
