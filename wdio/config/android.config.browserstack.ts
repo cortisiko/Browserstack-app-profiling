@@ -1,9 +1,12 @@
 import { removeSync } from 'fs-extra';
+import type { Options } from '@wdio/types';
 import generateTestReports from '../../wdio/utils/generateTestReports';
 import BrowserStackAPI from '../../wdio/utils/browserstackApi';
 import { config } from '../../wdio.conf.js';
 import path from 'path';
 import fs from 'fs';
+
+const browserstack = require('browserstack-local');
 
 // Appium capabilities
 // https://appium.io/docs/en/writing-running-appium/caps/
@@ -26,25 +29,10 @@ const defaultCapabilities = [
     platformName: 'Android',
     'appium:noReset': false,
     'appium:fullReset': false,
-    'appium:maxInstances': 2,
+    'appium:maxInstances': 1,
     'appium:build': 'Android App Launch Times Tests',
     'appium:deviceName': process.env.BROWSERSTACK_DEVICE || 'Samsung Galaxy S23 Ultra',
     'appium:os_version': process.env.BROWSERSTACK_OS_VERSION || '13.0',
-    'appium:app': 'bs://4b2a122dc8eafe801a765875b94952cbf52a342e',
-    'bstack:options' : {
-        "appProfiling" : "true",
-        "local": "true",
-        "localIdentifier": process.env.GITHUB_RUN_ID,
-    }
-  },
-  {
-    platformName: 'Android',
-    'appium:noReset': false,
-    'appium:fullReset': false,
-    'appium:maxInstances': 2,
-    'appium:build': 'Android App Launch Times Tests',
-    'appium:deviceName': process.env.BROWSERSTACK_DEVICE || 'Redmi Note 8',
-    'appium:os_version': process.env.BROWSERSTACK_OS_VERSION || '9.0',
     'appium:app': 'bs://4b2a122dc8eafe801a765875b94952cbf52a342e',
     'bstack:options' : {
         "appProfiling" : "true",
