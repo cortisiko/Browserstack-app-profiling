@@ -31,7 +31,7 @@ const defaultCapabilities = [
     'appium:fullReset': false,
     'appium:maxInstances': 1,
     'appium:build': 'Android App Profiling Tests',
-    'appium:deviceName': process.env.BROWSERSTACK_DEVICE || 'Redmi Note 8',
+    'appium:deviceName': process.env.BROWSERSTACK_DEVICE || 'Xiaomi Redmi Note 8',
     'appium:os_version': process.env.BROWSERSTACK_OS_VERSION || '9.0',
     'appium:app': 'bs://99b43ac49cc1855053e0d154592a1cc7b289955e',
     'bstack:options' : {
