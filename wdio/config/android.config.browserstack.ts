@@ -22,7 +22,7 @@ config.exclude = [];
 
 // Remove the complex exclude patterns - let tag filtering handle it
 // config.exclude = [...];
-// test commit
+
 // Define capabilities for regular tests
 const defaultCapabilities = [
   {
@@ -31,8 +31,8 @@ const defaultCapabilities = [
     'appium:fullReset': false,
     'appium:maxInstances': 1,
     'appium:build': 'Android App Profiling Tests',
-    'appium:deviceName': process.env.BROWSERSTACK_DEVICE || 'Xiaomi Redmi Note 11',
-    'appium:os_version': process.env.BROWSERSTACK_OS_VERSION || '11.0',
+    'appium:deviceName': process.env.BROWSERSTACK_DEVICE || 'Samsung Galaxy S23 Ultra',
+    'appium:os_version': process.env.BROWSERSTACK_OS_VERSION || '13.0',
     'appium:app': 'bs://99b43ac49cc1855053e0d154592a1cc7b289955e',
     'bstack:options' : {
         "appProfiling" : "true",
