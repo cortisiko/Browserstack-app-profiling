@@ -217,8 +217,6 @@ jobs:
 
       - name: Run Android Performance Tests
         env:
-          BROWSERSTACK_DEVICE: ${{ vars.BROWSERSTACK_ANDROID_DEVICE || 'Samsung Galaxy S23 Ultra' }}
-          BROWSERSTACK_OS_VERSION: ${{ vars.BROWSERSTACK_ANDROID_OS_VERSION || '13.0' }}
           BROWSERSTACK_LOCAL: true
           BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
         run: |
