@@ -30,9 +30,9 @@ const defaultCapabilities = [
     'appium:noReset': false,
     'appium:fullReset': false,
     'appium:maxInstances': 1,
-    'appium:build': 'Android App Launch Times Tests',
-    'appium:deviceName': process.env.BROWSERSTACK_DEVICE || 'Samsung Galaxy S23 Ultra',
-    'appium:os_version': process.env.BROWSERSTACK_OS_VERSION || '13.0',
+    'appium:build': 'Android App Profiling Tests',
+    'appium:deviceName': process.env.BROWSERSTACK_DEVICE || 'Redmi Note 8',
+    'appium:os_version': process.env.BROWSERSTACK_OS_VERSION || '9.0',
     'appium:app': 'bs://99b43ac49cc1855053e0d154592a1cc7b289955e',
     'bstack:options' : {
         "appProfiling" : "true",
