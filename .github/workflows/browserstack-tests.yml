@@ -267,7 +267,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            // Read the comment from the file
+            // Read the consolidated comment from the file
             const fs = require('fs');
             let comment;
             
@@ -286,7 +286,7 @@ jobs:
             
             const existingComment = comments.find(comment => 
               comment.user.login === 'github-actions[bot]' && 
-              comment.body.includes('AppProfiling Metrics')
+              comment.body.includes('AppProfiling Metrics Summary')
             );
             
             if (existingComment) {
@@ -297,7 +297,7 @@ jobs:
                 comment_id: existingComment.id,
                 body: comment
               });
-              console.log('Updated existing AppProfiling comment');
+              console.log('Updated existing consolidated AppProfiling comment');
             } else {
               // Create new comment
               await github.rest.issues.createComment({
@@ -306,7 +306,7 @@ jobs:
                 issue_number: context.issue.number,
                 body: comment
               });
-              console.log('Created new AppProfiling comment');
+              console.log('Created new consolidated AppProfiling comment');
             }
 
       - name: Upload test results

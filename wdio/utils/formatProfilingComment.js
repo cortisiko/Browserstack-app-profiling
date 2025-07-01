@@ -168,7 +168,7 @@ function main() {
 }
 
 /**
- * Format multiple profiling files as a combined GitHub comment
+ * Format multiple profiling files as a combined GitHub comment with separate sections
  * @param {string} reportsDir - Reports directory path
  * @returns {string} Formatted GitHub comment for multiple files
  */
@@ -191,30 +191,117 @@ function formatMultipleProfilingFiles(reportsDir = './wdio/reports') {
       return formatProfilingComment(files[0].path);
     }
     
-    // Multiple files - create a summary
+    // Multiple files - create a comprehensive comment with sections for each session
     let comment = '## 📊 AppProfiling Metrics Summary :chart_with_upwards_trend:\n\n';
     comment += `**Total Sessions:** ${files.length}\n\n`;
     
-    // Show the most recent session in detail
-    comment += '### 🆕 Latest Session Details\n\n';
-    comment += formatProfilingComment(files[0].path).replace('## 📊 AppProfiling Metrics :chart_with_upwards_trend:\n\n', '');
-    
-    // Show summary of all sessions
-    comment += '\n### 📋 All Sessions Summary\n\n';
-    comment += '| Session ID | Device | Date | Issues |\n';
-    comment += '|------------|--------|------|--------|\n';
-    
-    files.forEach(file => {
+    // Process each file and create a section for each session
+    files.forEach((file, index) => {
       try {
         const data = JSON.parse(fs.readFileSync(file.path, 'utf8'));
         const { metadata, data: profilingData, currentSession } = data;
-        const appData = profilingData['io.metamask.qa'];
-        const issueCount = appData?.detected_issues?.length || 0;
-        const date = new Date(metadata.created_at).toLocaleDateString();
         
-        comment += `| \`${currentSession.sessionId.substring(0, 8)}...\` | ${metadata.device} | ${date} | ${issueCount} issue${issueCount !== 1 ? 's' : ''} |\n`;
+        // Debug: Log the structure of the data
+        console.log(`Processing file: ${file.name}`);
+        console.log('Data keys:', Object.keys(data));
+        console.log('Profiling data keys:', Object.keys(profilingData || {}));
+        
+        const appData = profilingData?.['io.metamask.qa'];
+        
+        if (!appData) {
+          console.log('No app data found, available keys:', Object.keys(profilingData || {}));
+          comment += `### ❌ Session ${index + 1}: Error Processing Data\n\n`;
+          comment += `**File:** ${file.name}\n`;
+          comment += `**Session ID:** ${currentSession?.sessionId || 'unknown'}\n`;
+          comment += `**Device:** ${metadata?.device || 'unknown'}\n`;
+          comment += `**Error:** No app data found in profiling results\n`;
+          comment += `**Available data keys:** ${Object.keys(profilingData || {}).join(', ')}\n\n`;
+          comment += '---\n\n';
+          return;
+        }
+        
+        console.log('App data keys:', Object.keys(appData));
+        console.log('Metrics keys:', Object.keys(appData.metrics || {}));
+        
+        // Create section header for this session
+        comment += `### 📱 Session ${index + 1}: ${metadata.device} (${metadata.os_version})\n\n`;
+        
+        // Session information
+        comment += `**Session ID:** \`${currentSession.sessionId}\`\n`;
+        comment += `**BrowserStack Session:** [View Session](https://app-automate.browserstack.com/builds/${currentSession.buildId}/sessions/${currentSession.sessionId})\n`;
+        comment += `**Test Date:** ${new Date(metadata.created_at).toLocaleString()}\n\n`;
+        
+        // Detected Issues
+        if (appData.detected_issues && appData.detected_issues.length > 0) {
+          comment += '**⚠️ Detected Issues:**\n';
+          appData.detected_issues.forEach((issue, issueIndex) => {
+            const emoji = issue.type === 'error' ? '🔴' : '🟡';
+            comment += `${emoji} **${issue.title}** - ${issue.subtitle} (Current: ${issue.current} ${issue.unit}, Recommended: ${issue.recommended} ${issue.unit})\n`;
+          });
+          comment += '\n';
+        } else {
+          comment += '**✅ No Issues Detected**\n\n';
+        }
+        
+        // Performance Metrics
+        const metrics = appData.metrics || {};
+        const units = data.units || {};
+        
+        comment += '**📈 Performance Metrics:**\n';
+        
+        // CPU Usage (if available)
+        if (metrics.cpu && metrics.cpu.avg !== undefined && metrics.cpu.max !== undefined) {
+          comment += `   • CPU: ${metrics.cpu.avg}${units.cpu || '%'} avg, ${metrics.cpu.max}${units.cpu || '%'} max\n`;
+        }
+        
+        // Memory Usage (if available)
+        if (metrics.mem && metrics.mem.avg !== undefined && metrics.mem.max !== undefined) {
+          comment += `   • Memory: ${metrics.mem.avg} ${units.mem || 'MB'} avg, ${metrics.mem.max} ${units.mem || 'MB'} max\n`;
+        }
+        
+        // Battery Usage (if available)
+        if (metrics.batt && metrics.batt.total_batt_usage_pct !== null && metrics.batt.total_batt_usage_pct !== undefined) {
+          comment += `   • Battery: ${metrics.batt.total_batt_usage_pct}%\n`;
+        }
+        
+        // UI Rendering (if available)
+        if (metrics.ui_rendering) {
+          if (metrics.ui_rendering.slow_frames_pct !== undefined) {
+            comment += `   • Slow Frames: ${metrics.ui_rendering.slow_frames_pct}%\n`;
+          }
+          if (metrics.ui_rendering.frozen_frames_pct !== undefined) {
+            comment += `   • Frozen Frames: ${metrics.ui_rendering.frozen_frames_pct}%\n`;
+          }
+          if (metrics.ui_rendering.num_anrs !== undefined) {
+            comment += `   • ANRs: ${metrics.ui_rendering.num_anrs}\n`;
+          }
+        }
+        
+        // Disk I/O (if available)
+        if (metrics.diskio && metrics.diskio.total_reads !== undefined && metrics.diskio.total_writes !== undefined) {
+          comment += `   • Disk I/O: ${metrics.diskio.total_reads} ${units.diskio || 'KB'} reads, ${metrics.diskio.total_writes} ${units.diskio || 'KB'} writes\n`;
+        }
+        
+        // Network I/O (if available)
+        if (metrics.networkio && metrics.networkio.total_upload !== undefined && metrics.networkio.total_download !== undefined) {
+          comment += `   • Network I/O: ${metrics.networkio.total_upload} ${units.networkio || 'KB'} upload, ${metrics.networkio.total_download} ${units.networkio || 'KB'} download\n`;
+        }
+        
+        comment += '\n';
+        
+        // Add separator between sessions
+        if (index < files.length - 1) {
+          comment += '---\n\n';
+        }
+        
       } catch (error) {
         console.warn(`Error processing file ${file.path}:`, error.message);
+        comment += `### ❌ Session ${index + 1}: Error Processing Data\n\n`;
+        comment += `**File:** ${file.name}\n`;
+        comment += `**Error:** ${error.message}\n\n`;
+        if (index < files.length - 1) {
+          comment += '---\n\n';
+        }
       }
     });
     
