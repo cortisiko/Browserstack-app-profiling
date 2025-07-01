@@ -21,9 +21,11 @@ Feature: Profile network list
     And I type in my SRP 
     And I tap on button with text "Import Secret Recovery Phrase"
     And I tap on button with text "Continue"
+    And I wait 
     And I tap on the Identicon
     And I tap on button with text "Account 8"
     And I tap on the networks filter
     And I filter by popular networks
     And I tap on the Identicon
     And I tap on button with text "Account 9" 
+    And I collect app profiling data at test end

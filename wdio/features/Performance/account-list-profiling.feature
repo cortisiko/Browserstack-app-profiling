@@ -22,8 +22,8 @@ Feature: Profile the account list after importing multiple SRPs
     And I tap on button with text "Import Secret Recovery Phrase"
     And I tap on button with text "Continue"
     And I wait 
-    # And I tap on the Identicon
-    # And I tap on button with text "Account 7"
-    # And I tap on the Identicon
-    # And I collect app profiling data at test end
-    # # Then the app profiling data should be saved 
+    And I tap on the Identicon
+    And I tap on button with text "Account 7"
+    And I tap on the Identicon
+    And I collect app profiling data at test end
+    # Then the app profiling data should be saved 
