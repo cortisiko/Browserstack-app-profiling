@@ -18,10 +18,10 @@
     "test:e2e:ios:debug:run": "IS_TEST='true' NODE_OPTIONS='--experimental-vm-modules' detox reset-lock-file && NODE_OPTIONS='--experimental-vm-modules' detox test -c ios.sim.debug",
     "test:e2e:android:debug:build": "IS_TEST='true' detox build -c android.emu.debug",
     "test:e2e:android:debug:run": "IS_TEST='true' NODE_OPTIONS='--experimental-vm-modules' detox test -c android.emu.debug",
-    "test:wdio:ios": "yarn wdio ./wdio/config/ios.config.debug.js",
-    "test:wdio:ios:browserstack": "yarn wdio ./wdio/config/ios.config.browserstack.js",
-    "test:wdio:android": "yarn wdio ./wdio/config/android.config.debug.js",
-    "test:wdio:android:browserstack": "yarn wdio ./wdio/config/android.config.browserstack.js"
+    "test:wdio:ios": "yarn wdio ./wdio/config/ios.config.debug.ts",
+    "test:wdio:ios:browserstack": "yarn wdio ./wdio/config/ios.config.browserstack.ts",
+    "test:wdio:android": "yarn wdio ./wdio/config/android.config.debug.ts",
+    "test:wdio:android:browserstack": "yarn wdio ./wdio/config/android.config.browserstack.ts"
   },
   "packageManager": "yarn@1.22.22",
   "foundryup": {
@@ -43,7 +43,10 @@
     "version": "v0.3.0"
   },
   "dependencies": {
+    "@viem/anvil": "^0.0.10",
     "detox": "^20.39.0",
+    "mockttp": "^4.0.1",
+    "viem": "^2.31.4",
     "webdriverio": "^9.16.2"
   },
   "devDependencies": {
@@ -53,9 +56,9 @@
     "@cucumber/cucumber": "^10.0.1",
     "@metamask/chain-agnostic-permission": "^0.7.1",
     "@metamask/gas-fee-controller": "^24.0.0",
-    "@metamask/keyring-api": "^0.1.1",
-    "@metamask/transaction-controller": "^0.1.1",
-    "@metamask/utils": "^0.1.1",
+    "@metamask/keyring-api": "^18.0.0",
+    "@metamask/transaction-controller": "^58.1.0",
+    "@metamask/utils": "^11.4.0",
     "@types/fs-extra": "^11.0.4",
     "@wdio/appium-service": "^9.16.2",
     "@wdio/browserstack-service": "^9.16.2",

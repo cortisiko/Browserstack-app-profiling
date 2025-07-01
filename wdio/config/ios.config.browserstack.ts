@@ -26,8 +26,13 @@ const defaultCapabilities = [
   "bstack:options": {
     "appProfiling": "true",
     "local": "true",
+    "localIdentifier": process.env.GITHUB_RUN_ID,
     "interactiveDebugging": true,
-    "buildName": "iOS App Launch Times Tests"
+    "buildName": "iOS App Launch Times Tests",
+    "networkLogs": "true",
+    "networkLogsOptions": {
+        "captureContent": "true"
+    }
   }
 }
 
@@ -47,6 +52,12 @@ const upgradeCapabilities = [
     'appium:settings[customSnapshotTimeout]': 20000, // Reduced from 50000 for faster detection
     'bstack:options': {
       buildName: 'iOS App Upgrade E2E',
+      local: 'true',
+      localIdentifier: process.env.GITHUB_RUN_ID,
+      networkLogs: 'true',
+      networkLogsOptions: {
+          captureContent: 'true'
+      }
     },
   },
 ];
@@ -88,7 +99,8 @@ config.services = [
     {
       accessibility: false,
       buildIdentifier: 'metamask-mobile-tests',
-      browserstackLocal: true,
+      browserstackLocal: false, // Don't start a new tunnel, use the one from GitHub Actions
+      localIdentifier: process.env.GITHUB_RUN_ID, // Use the same identifier as GitHub Actions
     }
   ]
 ];
@@ -109,6 +121,14 @@ config.before = async function (capabilities: any, specs: any, browser: any) {
   // This will be called before each test starts, when the driver is available
   console.log('=== before called ===');
   console.log('Browser object:', browser);
+  
+  // Debug BrowserStack local tunnel configuration
+  console.log('=== BrowserStack Local Tunnel Debug ===');
+  console.log('GITHUB_RUN_ID:', process.env.GITHUB_RUN_ID);
+  console.log('BROWSERSTACK_LOCAL_IDENTIFIER:', process.env.BROWSERSTACK_LOCAL_IDENTIFIER);
+  console.log('BROWSERSTACK_LOCAL:', process.env.BROWSERSTACK_LOCAL);
+  console.log('BROWSERSTACK_USERNAME:', process.env.BROWSERSTACK_USERNAME ? 'SET' : 'NOT SET');
+  console.log('BROWSERSTACK_ACCESS_KEY:', process.env.BROWSERSTACK_ACCESS_KEY ? 'SET' : 'NOT SET');
   
   try {
     // Get the actual BrowserStack session ID from the driver

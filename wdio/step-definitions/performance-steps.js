@@ -7,26 +7,48 @@ const BrowserStackAPI = require('../utils/browserstackApi');
 
 Given('I capture the current BrowserStack session ID', async function() {
   try {
-    const sessionCapabilities = await browser.getSession();
+    const sessionCapabilities = await browser.getAppiumSessionCapabilities();
     const deviceUDID = sessionCapabilities.sessionId;
     
-    console.log('Capturing session ID from capabilities:', deviceUDID);
+    // Try to extract BrowserStack session ID from various sources
+    let browserstackSessionId = null;
     
-    const api = new BrowserStackAPI();
-    
-    // Look for BrowserStack session ID in the capabilities or environment
-    const browserstackSessionId = sessionCapabilities['bstack:options']?.sessionId ||
-                                 process.env.BROWSERSTACK_SESSION_ID ||
-                                 deviceUDID;
-    
-    if (browserstackSessionId) {
-      api.captureCurrentSessionId(browserstackSessionId);
-      console.log(`Session ID captured: ${browserstackSessionId}`);
-    } else {
-      console.log('No session ID found to capture');
+    // Method 1: Check if it's in the capabilities
+    if (sessionCapabilities['bstack:options']?.sessionId) {
+      browserstackSessionId = sessionCapabilities['bstack:options'].sessionId;
+      console.log('Found BrowserStack session ID in capabilities:', browserstackSessionId);
     }
+    
+    // Method 2: Check environment variables
+    if (!browserstackSessionId && process.env.BROWSERSTACK_SESSION_ID) {
+      browserstackSessionId = process.env.BROWSERSTACK_SESSION_ID;
+      console.log('Found BrowserStack session ID in environment:', browserstackSessionId);
+    }
+    
+    // Method 3: Use device UDID as fallback
+    if (!browserstackSessionId) {
+      browserstackSessionId = deviceUDID;
+      console.log('Using device UDID as BrowserStack session ID:', browserstackSessionId);
+    }
+    
+    // Store the session ID globally
+    global.currentBrowserStackSessionId = browserstackSessionId;
+    
+    console.log('=== BROWSERSTACK SESSION ID CAPTURED ===');
+    console.log('Session ID:', browserstackSessionId);
+    console.log('Device UDID:', deviceUDID);
+    console.log('Build ID:', sessionCapabilities['bstack:options']?.buildIdentifier || 
+                sessionCapabilities.build || sessionCapabilities['appium:build']);
+    
+    // Capture the session ID for later use
+    const api = new BrowserStackAPI();
+    api.captureCurrentSessionId(browserstackSessionId);
+    
+    console.log('✓ Session ID captured and stored for profiling data collection');
+    
   } catch (error) {
-    console.error('Error capturing session ID:', error);
+    console.error('Error capturing BrowserStack session ID:', error);
+    throw error;
   }
 });
 
@@ -123,4 +145,11 @@ Then('I collect app profiling data at test end', async function() {
   } catch (error) {
     console.error('Error collecting profiling data at test end:', error);
   }
+});
+
+Then('I output the current BrowserStack session ID', async function() {
+  const sessionId = global.currentBrowserStackSessionId || 'Not captured';
+  console.log('=== CURRENT BROWSERSTACK SESSION ID ===');
+  console.log('Session ID:', sessionId);
+  console.log('=====================================');
 }); 

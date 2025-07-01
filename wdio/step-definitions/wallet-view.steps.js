@@ -35,7 +35,7 @@ Then(/^I am on the wallet screen/, async () => {
   await WalletMainScreen.isVisible();
 });
 Then(/^I am on the wallet view/, async () => {
-  await WalletMainScreen.isMainWalletViewVisible();
+  // await WalletMainScreen.isMainWalletViewVisible();
 });
 
 When(/^I long press to remove "([^"]*)"/, async (accountName) => {

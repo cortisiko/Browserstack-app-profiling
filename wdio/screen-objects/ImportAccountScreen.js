@@ -40,7 +40,8 @@ class ImportAccountScreen {
     await Gestures.waitAndTap(this.closeButton);
   }
   async isVisible() {
-    await expect(this.importAccountContainer).toBeDisplayed();
+    const element = await this.importAccountContainer;
+    await expect(element).toBeDisplayed();
   }
 }
 

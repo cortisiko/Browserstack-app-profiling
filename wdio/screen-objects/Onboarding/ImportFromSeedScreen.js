@@ -20,7 +20,8 @@ class ImportFromSeedScreen {
   }
 
   async isScreenTitleVisible() {
-    await expect(this.screenTitle).toBeDisplayed();
+    const element = await this.screenTitle;
+    await expect(element).toBeDisplayed();
   }
 
   async typeSecretRecoveryPhrase(phrase) {

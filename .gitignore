@@ -1,3 +1,61 @@
+# Dependencies
 node_modules/
+
+# Environment variables
 .env
-wdio/reports/*
+.env.local
+.env.*.local
+
+# Test artifacts and reports
+wdio/reports/
+wdio/reports/html/
+wdio/reports/json/
+wdio/reports/junit-results/
+wdio/reports/*.json
+wdio/reports/*.xml
+wdio/reports/*.html
+
+# BrowserStack session files
+wdio/reports/current-session.json
+wdio/reports/profiling-data-*.json
+wdio/reports/final-session-profiling-*.json
+
+# Logs
+*.log
+wdio/*.log
+logs/
+
+# Coverage reports
+coverage/
+*.lcov
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Build artifacts
+dist/
+build/
+out/
+
+# Package manager files
+yarn-error.log
+npm-debug.log*

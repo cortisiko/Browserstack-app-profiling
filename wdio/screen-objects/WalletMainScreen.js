@@ -138,7 +138,8 @@ class WalletMainScreen {
   }
 
   async isVisible() {
-    await expect(this.WalletScreenContainer).toBeDisplayed();
+    const element = await this.WalletScreenContainer;
+    await expect(element).toBeDisplayed();
   }
 
   async isNetworkNameCorrect(network) {
@@ -173,7 +174,8 @@ class WalletMainScreen {
   }
 
   async isNetworkNavbarTitle(text) {
-    await expect(this.networkNavbarTitle).toHaveText(text);
+    const element = await this.networkNavbarTitle;
+    await expect(element).toHaveText(text);
   }
 
   async tapAccountActions() {

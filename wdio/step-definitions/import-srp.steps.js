@@ -5,9 +5,9 @@ import CommonScreen from '../screen-objects/CommonScreen';
 import ImportSrpScreen from '../screen-objects/ImportSRPScreen';
 import { IDENTITY_TEAM_SEED_PHRASE_2 } from '../../e2e/specs/identity/utils/constants.ts';
 const setTimeout = 1500; //added to run on physical device
-
+const testSRP = 'verb hunt reunion injury first evidence frown crisp tomato dress depth wealth'
 When(/^I type in my SRP/, async () => {
-        const mnemonicArray = IDENTITY_TEAM_SEED_PHRASE_2.split(' ');
+        const mnemonicArray = testSRP.split(' ');
         const numberOfWords = mnemonicArray.length;
       
         if (numberOfWords === 24) {
