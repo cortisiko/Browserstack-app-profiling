@@ -284,29 +284,64 @@ jobs:
               issue_number: context.issue.number,
             });
             
-            const existingComment = comments.find(comment => 
+            // Find existing AppProfiling comments
+            const existingComments = comments.filter(comment => 
               comment.user.login === 'github-actions[bot]' && 
               comment.body.includes('AppProfiling Metrics')
             );
             
-            if (existingComment) {
-              // Update existing comment
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existingComment.id,
-                body: comment
-              });
-              console.log('Updated existing AppProfiling comment');
-            } else {
-              // Create new comment
+            // Check if this is a new commit or just a rerun
+            const currentCommitSha = context.sha;
+            const isNewCommit = existingComments.length === 0 || 
+              !existingComments.some(existingComment => 
+                existingComment.body.includes(`Commit: \`${currentCommitSha.substring(0, 7)}\``)
+              );
+            
+            if (isNewCommit) {
+              // Add commit info to the comment
+              const commentWithCommit = comment.replace(
+                '## 📊 AppProfiling Metrics',
+                `## 📊 AppProfiling Metrics\n\n**Commit:** \`${currentCommitSha.substring(0, 7)}\``
+              );
+              
+              // Create new comment for new commit
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                body: comment
+                body: commentWithCommit
               });
-              console.log('Created new AppProfiling comment');
+              console.log('Created new AppProfiling comment for new commit');
+            } else {
+              // Find the comment for this commit and update it
+              const commentForThisCommit = existingComments.find(existingComment => 
+                existingComment.body.includes(`Commit: \`${currentCommitSha.substring(0, 7)}\``)
+              );
+              
+              if (commentForThisCommit) {
+                // Update existing comment for this commit
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: commentForThisCommit.id,
+                  body: comment
+                });
+                console.log('Updated existing AppProfiling comment for this commit');
+              } else {
+                // Fallback: create new comment if we can't find the right one
+                const commentWithCommit = comment.replace(
+                  '## 📊 AppProfiling Metrics',
+                  `## 📊 AppProfiling Metrics\n\n**Commit:** \`${currentCommitSha.substring(0, 7)}\``
+                );
+                
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: commentWithCommit
+                });
+                console.log('Created new AppProfiling comment (fallback)');
+              }
             }
 
       - name: Upload test results
