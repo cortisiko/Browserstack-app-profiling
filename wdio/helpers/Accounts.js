@@ -1,7 +1,7 @@
 // This is an incorrect BIP39 SRP. It uses words not in the BIP39 wordlist.
 const INCORRECT_SECRET_RECOVERY_PHRASE =
   'gain lemon refuse sunny identify diesel hand endless first involve wink size';
-const CORRECT_PASSWORD = `12345678`;
+const CORRECT_PASSWORD = `123123123`;
 const SHORT_PASSWORD = `1234567`;
 const INCORRECT_PASSWORD = `12345679`;
 
