@@ -67,7 +67,7 @@ jobs:
           echo "Running tests on branch: ${{ github.event.inputs.branch_name || 'main' }}"
           echo "Device: ${{ github.event.inputs.device || env.DEFAULT_DEVICE }}"
           echo "OS Version: ${{ github.event.inputs.os_version || env.DEFAULT_OS_VERSION }}"
-          yarn test:wdio:android:browserstack --performance"
+          yarn test:wdio:android:browserstack --performance
         env:
           BROWSERSTACK_DEVICE: ${{ github.event.inputs.device || env.DEFAULT_DEVICE }}
           BROWSERSTACK_OS_VERSION: ${{ github.event.inputs.os_version || env.DEFAULT_OS_VERSION }}
