@@ -1,9 +1,5 @@
 name: E2E Performance Tests
 
-env:
-  DEFAULT_DEVICE: 'Samsung Galaxy S23 Ultra'
-  DEFAULT_OS_VERSION: '13.0'
-
 on:
   workflow_dispatch:
     inputs:
@@ -18,14 +14,12 @@ on:
         default: 'main'
         type: string
       device:
-        description: 'Device to run tests on (e.g., Samsung Galaxy S23 Ultra)'
         required: false
-        default: 'Samsung Galaxy S23 Ultra'
+        default: 'Xiaomi Redmi Note 11'
         type: string
       os_version:
-        description: 'OS Version (e.g., 13.0)'
         required: false
-        default: '13.0'
+        default: '11.0'
         type: string
   pull_request:
     types: [opened, synchronize, reopened]
@@ -39,6 +33,12 @@ on:
 jobs:
   run-performance-test:
     runs-on: ubuntu-latest
+    env:
+      BROWSERSTACK_DEVICE: ${{ github.event.inputs.device || 'Xiaomi Redmi Note 11' }}
+      BROWSERSTACK_OS_VERSION: ${{ github.event.inputs.os_version || '11.0' }}
+      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      MM_TEST_ACCOUNT_SRP: ${{ secrets.MM_TEST_ACCOUNT_SRP }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -65,9 +65,6 @@ jobs:
       - name: Run Android Performance Tests
         run: |
           echo "Running tests on branch: ${{ github.event.inputs.branch_name || 'main' }}"
-          echo "Device: ${{ github.event.inputs.device || env.DEFAULT_DEVICE }}"
-          echo "OS Version: ${{ github.event.inputs.os_version || env.DEFAULT_OS_VERSION }}"
+          echo "Device: ${{ env.BROWSERSTACK_DEVICE }}"
+          echo "OS Version: ${{ env.BROWSERSTACK_OS_VERSION }}"
           yarn test:wdio:android:browserstack --performance
-        env:
-          BROWSERSTACK_DEVICE: ${{ github.event.inputs.device || env.DEFAULT_DEVICE }}
-          BROWSERSTACK_OS_VERSION: ${{ github.event.inputs.os_version || env.DEFAULT_OS_VERSION }}
