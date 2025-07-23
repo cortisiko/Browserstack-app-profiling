@@ -18,12 +18,14 @@ on:
         default: 'main'
         type: string
       device:
+        description: 'Device to run tests on (e.g., Samsung Galaxy S23 Ultra)'
         required: false
-        default: ${{ env.DEFAULT_DEVICE }}
+        default: 'Samsung Galaxy S23 Ultra'
         type: string
       os_version:
+        description: 'OS Version (e.g., 13.0)'
         required: false
-        default: ${{ env.DEFAULT_OS_VERSION }}
+        default: '13.0'
         type: string
   pull_request:
     types: [opened, synchronize, reopened]
@@ -69,4 +71,3 @@ jobs:
         env:
           BROWSERSTACK_DEVICE: ${{ github.event.inputs.device || env.DEFAULT_DEVICE }}
           BROWSERSTACK_OS_VERSION: ${{ github.event.inputs.os_version || env.DEFAULT_OS_VERSION }}
-    
