@@ -1,0 +1,67 @@
+name: E2E Performance Tests
+
+env:
+  DEFAULT_DEVICE: 'Samsung Galaxy S23 Ultra'
+  DEFAULT_OS_VERSION: '13.0'
+
+on:
+  workflow_dispatch:
+    inputs:
+      info:
+        description: 'For available devices and OS versions, visit: https://www.browserstack.com/list-of-browsers-and-platforms/app_automate'
+        required: false
+        default: 'Click the link above to see supported devices'
+        type: string
+      branch_name:
+        description: 'Branch name to run tests on'
+        required: true
+        default: 'main'
+        type: string
+      device:
+        required: false
+        default: ${{ env.DEFAULT_DEVICE }}
+        type: string
+      os_version:
+        required: false
+        default: ${{ env.DEFAULT_OS_VERSION }}
+        type: string
+  schedule:
+    # Every 3 hours on main branch
+    - cron: '0 */3 * * *'
+
+jobs:
+  run-performance-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch_name || 'main' }}
+      
+      - name: BrowserStack Env Setup
+        uses: browserstack/github-actions/setup-env@master
+        with:
+          username: ${{ secrets.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          build-name: ${{ github.repository }}-${{ github.run_number }}
+          project-name: ${{ github.repository }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.1'
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      
+      - name: Run Android Performance Tests
+        run: |
+          echo "Running tests on branch: ${{ github.event.inputs.branch_name || 'main' }}"
+          echo "Device: ${{ github.event.inputs.device || env.DEFAULT_DEVICE }}"
+          echo "OS Version: ${{ github.event.inputs.os_version || env.DEFAULT_OS_VERSION }}"
+          yarn test:wdio:android:browserstack --performance"
+        env:
+          BROWSERSTACK_DEVICE: ${{ github.event.inputs.device || env.DEFAULT_DEVICE }}
+          BROWSERSTACK_OS_VERSION: ${{ github.event.inputs.os_version || env.DEFAULT_OS_VERSION }}
+    
