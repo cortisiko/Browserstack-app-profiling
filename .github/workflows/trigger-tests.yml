@@ -5,9 +5,6 @@ on:
     inputs:
       info:
         description: 'For available devices and OS versions, visit: https://www.browserstack.com/list-of-browsers-and-platforms/app_automate'
-        required: false
-        default: 'Click the link above to see supported devices'
-        type: string
       branch_name:
         description: 'Branch name to run tests on'
         required: true
