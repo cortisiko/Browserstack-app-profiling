@@ -23,6 +23,10 @@ on:
         required: false
         default: '11.0'
         type: string
+      browserstack_app_url:
+        description: 'Browserstack app URL'
+        required: false
+        type: string
   schedule:
     # Every 3 hours on main branch
     - cron: '0 */3 * * *'
