@@ -4,10 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       info:
-        description: |
-          For available devices and OS versions, visit: https://www.browserstack.com/list-of-browsers-and-platforms/app_automate
-          
-          To get the browserstack app url grab it from the browserstack_uploaded_apps.json in the build_android_qa workflow artifacts tab in bitrise. See here for example: https://app.bitrise.io/build/47ae4a03-c9d0-437f-bd0e-283449b17f07?tab=artifacts
+        description: 'For available devices and OS versions, visit: https://www.browserstack.com/list-of-browsers-and-platforms/app_automate'
         required: false
         default: 'Info: Visit the link above for device and OS options'
         type: string
