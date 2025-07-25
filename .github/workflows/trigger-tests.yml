@@ -25,7 +25,7 @@ on:
         type: string
       browserstack_app_url:
         description: 'Browserstack app URL'
-        required: false
+        required: true
         type: string
   schedule:
     # Every 3 hours on main branch
