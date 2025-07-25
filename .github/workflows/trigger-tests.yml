@@ -60,7 +60,7 @@ jobs:
         with:
           username: ${{ secrets.BROWSERSTACK_USERNAME }}
           access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          build-name: ${{ github.repository }}-${{ github.run_number }}
+          build-name: ${{ github.repository }}-${{ github.event.inputs.branch_name || 'main' }}-${{ github.event.inputs.device || 'Xiaomi Redmi Note 11' }}-run-${{ github.run_number }}
           project-name: ${{ github.repository }}
       
       - name: Setup BrowserStack Local
