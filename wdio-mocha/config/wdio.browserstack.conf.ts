@@ -35,6 +35,7 @@ const mochaCapabilities = [
     'bstack:options' : {
         "appProfiling" : "true",
         "local": "true",
+        "localIdentifier": process.env.GITHUB_RUN_ID,
         "networkLogs": "true",
         "networkLogsOptions": {
             "captureContent": "true"
