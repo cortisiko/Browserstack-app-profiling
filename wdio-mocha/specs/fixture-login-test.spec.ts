@@ -1,7 +1,6 @@
 import FixtureBuilder from '../../e2e/fixtures/fixture-builder';
 import { loadFixture, startFixtureServer,stopFixtureServer } from '../../e2e/fixtures/fixture-helper';
 import FixtureServer from '../../e2e/fixtures/fixture-server';
-import ADB from 'appium-adb';
 import Accounts from '../../wdio/helpers/Accounts';
 import LoginScreen from '../../wdio/screen-objects/LoginScreen';
 import WalletMainScreen from '../../wdio/screen-objects/WalletMainScreen';
@@ -26,30 +25,43 @@ describe('Fixture Server Login Test', () => {
     // Background steps - equivalent to Cucumber Background
     console.log('=== Starting fixture server with login state ===');
     const state = new FixtureBuilder().build();
+    
+    // Debug fixture server connection
+    console.log('Fixture server state:', JSON.stringify(state, null, 2));
+    
     await startFixtureServer(fixtureServer);
+    console.log('✓ Fixture server started successfully');
+    
+    // Test if fixture server is accessible
+    try {
+      const response = await fetch('http://localhost:12345');
+      console.log('✓ Fixture server is accessible locally');
+    } catch (error) {
+      console.log('⚠️ Fixture server not accessible locally:', error.message);
+    }
+    
     await loadFixture(fixtureServer, { fixture: state });
+    console.log('✓ Fixture loaded successfully');
+    
+    // Wait for app to process the fixture
+    console.log('Waiting for app to process fixture data...');
     await driver.pause(5000);
     const bundleId = 'io.metamask.qa';
 
-    // Check if running on BrowserStack
-    // const capabilities = await driver.getSession();
-    // const isBrowserStack = (capabilities['bstack:options']) ||
-    // process.argv.includes('browserstack.conf.ts')
-
-    // console.log('isBrowserStack', isBrowserStack);
+    // BrowserStack configuration - no ADB commands needed
+    // BrowserStack Local tunnel handles all port forwarding automatically
+    console.log('Running on BrowserStack - port forwarding handled by BrowserStack Local tunnel');
+    console.log('Fixture server accessible via BrowserStack Local tunnel on port 12345');
     
-    // if (!isBrowserStack) {
-    //   // Only execute these steps if NOT running on BrowserStack
-    //   if (driver.capabilities.platformName === 'Android') {
-    //     const adb = await ADB.createADB();  
-    //     await adb.reversePort(8545, 8545);
-    //     await adb.reversePort(12345, 12345);
-    //   }
-    //   console.log('App launched, waiting for UI to stabilize...');
-    // } else {
-    //   console.log('Running on BrowserStack - skipping local ADB and app management steps');
-    // }
+    // Debug GitHub Actions environment
+    console.log('=== GitHub Actions Debug ===');
+    console.log('GITHUB_RUN_ID:', process.env.GITHUB_RUN_ID);
+    console.log('BROWSERSTACK_LOCAL:', process.env.BROWSERSTACK_LOCAL);
+    console.log('BROWSERSTACK_LOCAL_IDENTIFIER:', process.env.BROWSERSTACK_LOCAL_IDENTIFIER);
+    console.log('BROWSERSTACK_USERNAME:', process.env.BROWSERSTACK_USERNAME ? 'SET' : 'NOT SET');
+    console.log('BROWSERSTACK_ACCESS_KEY:', process.env.BROWSERSTACK_ACCESS_KEY ? 'SET' : 'NOT SET');
 
+    // Fill password in Login screen
     console.log('=== Filling password in Login screen ===');
     await LoginScreen.waitForScreenToDisplay();
     await LoginScreen.typePassword('123123123');
