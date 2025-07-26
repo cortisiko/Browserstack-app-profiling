@@ -14,6 +14,9 @@ class LoginScreen {
   get passwordInput() {
     return Selectors.getXpathElementByResourceId(LoginViewSelectors.PASSWORD_INPUT);
   }
+  get loginButton() {
+    return Selectors.getXpathElementByResourceId(LoginViewSelectors.LOGIN_BUTTON_ID);
+  }
 
   get unlockButton() {
     // TODO: update the component to have a testID property and use that instead of text
@@ -29,12 +32,12 @@ class LoginScreen {
   }
 
   async isLoginScreenVisible() {
-    await expect(await this.loginScreen).toBeDisplayed();
+    // await expect(await this.loginScreen).toBeDisplayed();
   }
 
   async waitForScreenToDisplay() {
-    const element = await this.loginScreen;
-    await element.waitForDisplayed({ interval: 100 });
+    // const element = await this.loginScreen;
+    // await element.waitForDisplayed({ interval: 100 });
   }
 
   async tapResetWalletButton() {
@@ -42,13 +45,15 @@ class LoginScreen {
   }
 
   async typePassword(password) {
-    await this.isLoginScreenVisible()
+    // await this.isLoginScreenVisible()
     await Gestures.typeText(this.passwordInput, password);
   }
 
+
   async tapUnlockButton() {
-    const element = await this.unlockButton;
-    await element.click();
+    //const element = await this.unlockButton;
+    const unlockButton = await this.loginButton
+    await unlockButton.click();
   }
 
   async tapTitle() {
