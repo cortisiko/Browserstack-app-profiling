@@ -36,9 +36,31 @@ describe('Fixture Server Login Test', () => {
     try {
       const response = await fetch('http://localhost:12345');
       console.log('✓ Fixture server is accessible locally');
+      console.log('Response status:', response.status);
     } catch (error) {
       console.log('⚠️ Fixture server not accessible locally:', error.message);
     }
+    
+    // Test BrowserStack Local tunnel connectivity
+    console.log('=== BrowserStack Local Tunnel Test ===');
+    console.log('Testing if BrowserStack device can reach fixture server...');
+    
+    // Test if we can access the fixture server from the GitHub Actions runner
+    try {
+      const fixtureResponse = await fetch('http://localhost:12345');
+      console.log('✓ Fixture server accessible from GitHub Actions runner');
+      console.log('Fixture response status:', fixtureResponse.status);
+      
+      // Test if the response contains the expected fixture data
+      const responseText = await fixtureResponse.text();
+      console.log('Fixture response preview:', responseText.substring(0, 200) + '...');
+    } catch (error) {
+      console.log('❌ Fixture server NOT accessible from GitHub Actions runner:', error.message);
+    }
+    
+    // Wait a bit more for the fixture to be processed
+    console.log('Waiting for fixture to be processed by app...');
+    await driver.pause(3000);
     
     await loadFixture(fixtureServer, { fixture: state });
     console.log('✓ Fixture loaded successfully');
@@ -46,12 +68,27 @@ describe('Fixture Server Login Test', () => {
     // Wait for app to process the fixture
     console.log('Waiting for app to process fixture data...');
     await driver.pause(5000);
+    
+    // Check if app is in logged-in state
+    console.log('=== Checking app state after fixture load ===');
+    try {
+      // Try to check if we're already logged in (no password screen)
+      const loginScreen = await LoginScreen.isLoginScreenVisible();
+      console.log('Login screen visible:', loginScreen);
+    } catch (error) {
+      console.log('Login screen not visible (good - means we might be logged in)');
+    }
     const bundleId = 'io.metamask.qa';
 
     // BrowserStack configuration - no ADB commands needed
     // BrowserStack Local tunnel handles all port forwarding automatically
     console.log('Running on BrowserStack - port forwarding handled by BrowserStack Local tunnel');
     console.log('Fixture server accessible via BrowserStack Local tunnel on port 12345');
+    
+    // Test if the app can reach the fixture server through the tunnel
+    console.log('=== Testing app connectivity to fixture server ===');
+    console.log('App should be able to reach fixture server at: http://localhost:12345');
+    console.log('BrowserStack Local tunnel should forward this to the device');
     
     // Debug GitHub Actions environment
     console.log('=== GitHub Actions Debug ===');
