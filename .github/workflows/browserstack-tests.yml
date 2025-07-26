@@ -220,7 +220,7 @@ jobs:
           BROWSERSTACK_LOCAL: true
           BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
         run: |
-          yarn test:wdio:android:browserstack --performance
+          yarn test:wdio:mocha:browserstack
 
       - name: Generate AppProfiling Comment
         id: profiling-comment
