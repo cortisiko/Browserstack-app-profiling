@@ -32,25 +32,24 @@ describe('Fixture Server Login Test', () => {
     const bundleId = 'io.metamask.qa';
 
     // Check if running on BrowserStack
-    const capabilities = await driver.getSession();
-    const isBrowserStack = (capabilities['bstack:options']) ||
-    process.argv.includes('browserstack.conf.ts')
+    // const capabilities = await driver.getSession();
+    // const isBrowserStack = (capabilities['bstack:options']) ||
+    // process.argv.includes('browserstack.conf.ts')
 
-    console.log('isBrowserStack', isBrowserStack);
+    // console.log('isBrowserStack', isBrowserStack);
     
-    if (!isBrowserStack) {
-      // Only execute these steps if NOT running on BrowserStack
-      if (driver.capabilities.platformName === 'Android') {
-        const adb = await ADB.createADB();  
-        await adb.reversePort(8545, 8545);
-        await adb.reversePort(12345, 12345);
-      }
-      console.log('App launched, waiting for UI to stabilize...');
-    } else {
-      console.log('Running on BrowserStack - skipping local ADB and app management steps');
-    }
+    // if (!isBrowserStack) {
+    //   // Only execute these steps if NOT running on BrowserStack
+    //   if (driver.capabilities.platformName === 'Android') {
+    //     const adb = await ADB.createADB();  
+    //     await adb.reversePort(8545, 8545);
+    //     await adb.reversePort(12345, 12345);
+    //   }
+    //   console.log('App launched, waiting for UI to stabilize...');
+    // } else {
+    //   console.log('Running on BrowserStack - skipping local ADB and app management steps');
+    // }
 
-    // Fill password in Login screen
     console.log('=== Filling password in Login screen ===');
     await LoginScreen.waitForScreenToDisplay();
     await LoginScreen.typePassword('123123123');
