@@ -52,10 +52,7 @@ const mochaCapabilities = [
         "networkLogs": "true",
         "networkLogsOptions": {
             "captureContent": "true"
-        },
-        // Ensure fixture server port is forwarded
-        "localProxyHost": "localhost",
-        "localProxyPort": "12345"
+        }
     }
   }
 ];
@@ -141,6 +138,11 @@ config.before = async function (capabilities: any, specs: any, browser: any) {
   console.log('BROWSERSTACK_LOCAL:', process.env.BROWSERSTACK_LOCAL);
   console.log('BROWSERSTACK_USERNAME:', process.env.BROWSERSTACK_USERNAME ? 'SET' : 'NOT SET');
   console.log('BROWSERSTACK_ACCESS_KEY:', process.env.BROWSERSTACK_ACCESS_KEY ? 'SET' : 'NOT SET');
+  
+  // Wait for BrowserStack Local tunnel to be fully ready
+  console.log('=== Waiting for BrowserStack Local tunnel to be ready ===');
+  await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+  console.log('✓ Waited for BrowserStack Local tunnel');
   
   try {
     // Get the actual BrowserStack session ID from the driver
