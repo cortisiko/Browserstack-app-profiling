@@ -202,46 +202,21 @@ jobs:
           build-name: ${{ github.repository }}-${{ github.run_number }}
           project-name: ${{ github.repository }}
 
-      - name: Start BrowserStack Local
-        run: |
-          echo "Starting BrowserStack Local..."
-          # Download BrowserStack Local if not exists
-          if [ ! -f "./BrowserStackLocal" ]; then
-            echo "Downloading BrowserStack Local..."
-            wget http://www.browserstack.com/browserstack-local/BrowserStackLocal-linux-x64.zip
-            unzip BrowserStackLocal-linux-x64.zip
-            chmod +x BrowserStackLocal
-          fi
-          
-          # Start BrowserStack Local in background
-          ./BrowserStackLocal --key $BROWSERSTACK_ACCESS_KEY --local-identifier $GITHUB_RUN_ID --force-local --verbose &
-          BROWSERSTACK_PID=$!
-          echo $BROWSERSTACK_PID > browserstack.pid
-          
-          echo "BrowserStack Local started with PID: $BROWSERSTACK_PID"
+      - name: Setup BrowserStack Local
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: start
+          local-identifier: ${{ github.run_id }}
+          local-args: --force-local --verbose
 
-      - name: Wait for BrowserStack Local to be ready
+      - name: Wait for BrowserStack Local
         run: |
           echo "Waiting for BrowserStack Local to be ready..."
+          sleep 45
+          echo "BrowserStack Local should be ready now"
           
-          # Wait for BrowserStack Local to start
-          for i in {1..30}; do
-            if curl -s http://localhost:45691 > /dev/null; then
-              echo "✓ BrowserStack Local is ready!"
-              break
-            fi
-            echo "Waiting... (attempt $i/30)"
-            sleep 2
-          done
-          
-          # Final check
-          if ! curl -s http://localhost:45691 > /dev/null; then
-            echo "❌ BrowserStack Local failed to start"
-            exit 1
-          fi
-          
-          echo "✓ BrowserStack Local tunnel is established"
-          echo "Testing fixture server accessibility..."
+          # Additional verification that tunnel is working
+          echo "Verifying BrowserStack Local tunnel..."
           curl -s http://localhost:12345 > /dev/null && echo "✓ Fixture server accessible" || echo "⚠️ Fixture server not accessible yet"
 
       - name: Run Android Performance Tests
@@ -250,18 +225,6 @@ jobs:
           BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
         run: |
           yarn test:wdio:mocha:browserstack
-
-      - name: Stop BrowserStack Local
-        if: always()
-        run: |
-          echo "Stopping BrowserStack Local..."
-          if [ -f browserstack.pid ]; then
-            BROWSERSTACK_PID=$(cat browserstack.pid)
-            echo "Stopping process with PID: $BROWSERSTACK_PID"
-            kill $BROWSERSTACK_PID 2>/dev/null || true
-            rm -f browserstack.pid
-          fi
-          echo "BrowserStack Local stopped"
 
       - name: Generate AppProfiling Comment
         id: profiling-comment
