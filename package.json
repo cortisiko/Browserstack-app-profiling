@@ -21,7 +21,9 @@
     "test:wdio:ios": "yarn wdio ./wdio/config/ios.config.debug.ts",
     "test:wdio:ios:browserstack": "yarn wdio ./wdio/config/ios.config.browserstack.ts",
     "test:wdio:android": "yarn wdio ./wdio/config/android.config.debug.ts",
-    "test:wdio:android:browserstack": "yarn wdio ./wdio/config/android.config.browserstack.ts"
+    "test:wdio:android:browserstack": "yarn wdio ./wdio/config/android.config.browserstack.ts",
+    "test:wdio:mocha": "yarn wdio ./wdio-mocha/config/mocha.local.capabilities.ts",
+    "test:wdio:mocha:browserstack": "yarn wdio ./wdio-mocha/config/mocha.browserstack.capabilities.ts"
   },
   "packageManager": "yarn@1.22.22",
   "foundryup": {
@@ -66,10 +68,11 @@
     "@wdio/cucumber-framework": "^9.16.2",
     "@wdio/junit-reporter": "^9.16.2",
     "@wdio/local-runner": "^9.16.2",
+    "@wdio/mocha-framework": "^9.18.0",
     "@wdio/spec-reporter": "^9.16.2",
     "@wdio/types": "^9.16.2",
     "appium": "^2.19.0",
-    "appium-uiautomator2-driver": "^4.2.4",
+    "appium-uiautomator2-driver": "^4.2.7",
     "browserstack-local": "^1.5.1",
     "deepmerge": "^4.3.1",
     "dotenv": "^16.0.3",
