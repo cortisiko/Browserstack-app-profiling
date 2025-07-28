@@ -178,7 +178,7 @@ jobs:
 
   android-performance-tests:
     name: Android Performance Tests
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'run-android-performance-tests')
     
     steps:
@@ -208,8 +208,8 @@ jobs:
           # Download BrowserStack Local if not exists
           if [ ! -f "./BrowserStackLocal" ]; then
             echo "Downloading BrowserStack Local..."
-            curl -L -o BrowserStackLocal.zip "https://www.browserstack.com/browserstack-local/BrowserStackLocal-darwin-x64.zip"
-            unzip BrowserStackLocal.zip
+            wget http://www.browserstack.com/browserstack-local/BrowserStackLocal-linux-x64.zip
+            unzip BrowserStackLocal-linux-x64.zip
             chmod +x BrowserStackLocal
           fi
           
