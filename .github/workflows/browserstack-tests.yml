@@ -220,29 +220,29 @@ jobs:
           
           echo "BrowserStack Local started with PID: $BROWSERSTACK_PID"
 
-      # - name: Wait for BrowserStack Local to be ready
-      #   run: |
-      #     echo "Waiting for BrowserStack Local to be ready..."
+      - name: Wait for BrowserStack Local to be ready
+        run: |
+          echo "Waiting for BrowserStack Local to be ready..."
           
-      #     # Wait for BrowserStack Local to start
-      #     for i in {1..30}; do
-      #       if curl -s http://localhost:45691 > /dev/null; then
-      #         echo "✓ BrowserStack Local is ready!"
-      #         break
-      #       fi
-      #       echo "Waiting... (attempt $i/30)"
-      #       sleep 2
-      #     done
+          # Wait for BrowserStack Local to start
+          for i in {1..30}; do
+            if curl -s http://localhost:45691 > /dev/null; then
+              echo "✓ BrowserStack Local is ready!"
+              break
+            fi
+            echo "Waiting... (attempt $i/30)"
+            sleep 2
+          done
           
-      #     # Final check
-      #     if ! curl -s http://localhost:45691 > /dev/null; then
-      #       echo "❌ BrowserStack Local failed to start"
-      #       exit 1
-      #     fi
+          # Final check
+          if ! curl -s http://localhost:45691 > /dev/null; then
+            echo "❌ BrowserStack Local failed to start"
+            exit 1
+          fi
           
-      #     echo "✓ BrowserStack Local tunnel is established"
-      #     echo "Testing fixture server accessibility..."
-      #     curl -s http://localhost:12345 > /dev/null && echo "✓ Fixture server accessible" || echo "⚠️ Fixture server not accessible yet"
+          echo "✓ BrowserStack Local tunnel is established"
+          echo "Testing fixture server accessibility..."
+          curl -s http://localhost:12345 > /dev/null && echo "✓ Fixture server accessible" || echo "⚠️ Fixture server not accessible yet"
 
       - name: Run Android Performance Tests
         env:
