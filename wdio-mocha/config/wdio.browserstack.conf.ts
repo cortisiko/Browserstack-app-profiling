@@ -32,19 +32,6 @@ const mochaCapabilities = [
     'appium:deviceName': process.env.BROWSERSTACK_DEVICE || 'Xiaomi Redmi Note 11',
     'appium:os_version': process.env.BROWSERSTACK_OS_VERSION || '11.0',
     'appium:app': 'bs://f1eb1557acc5d30d8eda5ec6fe01a3909430b95f',
-    // BrowserStack app configuration for fixture server
-    'appium:appiumVersion': '2.0.1',
-    'appium:automationName': 'UiAutomator2',
-    // Add app package and activity for proper app launch
-    'appium:appPackage': 'io.metamask.qa',
-    'appium:appActivity': 'io.metamask.qa.MainActivity',
-    // Pass fixture server configuration as app arguments
-    'appium:appArgs': ['--fixtureServerPort=12345'],
-    // Set environment variables for fixture server
-    'appium:appEnv': {
-      'FIXTURE_SERVER_PORT': '12345',
-      'FIXTURE_SERVER_URL': 'http://localhost:12345'
-    },
     'bstack:options' : {
         "appProfiling" : "true",
         "local": "true",
@@ -52,10 +39,7 @@ const mochaCapabilities = [
         "networkLogs": "true",
         "networkLogsOptions": {
             "captureContent": "true"
-        },
-        // Ensure fixture server port is forwarded
-        "localProxyHost": "localhost",
-        "localProxyPort": "12345"
+        }
     }
   }
 ];
