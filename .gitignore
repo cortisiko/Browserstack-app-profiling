@@ -19,7 +19,8 @@ wdio/reports/*.html
 wdio/reports/current-session.json
 wdio/reports/profiling-data-*.json
 wdio/reports/final-session-profiling-*.json
-
+browserstack.local.log
+browserstack.err
 # Logs
 *.log
 wdio/*.log
