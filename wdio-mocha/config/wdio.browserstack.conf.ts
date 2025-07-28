@@ -35,8 +35,16 @@ const mochaCapabilities = [
     // BrowserStack app configuration for fixture server
     'appium:appiumVersion': '2.0.1',
     'appium:automationName': 'UiAutomator2',
-    // Note: BrowserStack apps are pre-built and may not support custom app arguments
-    // The app should detect the fixture server automatically
+    // Add app package and activity for proper app launch
+    'appium:appPackage': 'io.metamask.qa',
+    'appium:appActivity': 'io.metamask.qa.MainActivity',
+    // Pass fixture server configuration as app arguments
+    'appium:appArgs': ['--fixtureServerPort=12345'],
+    // Set environment variables for fixture server
+    'appium:appEnv': {
+      'FIXTURE_SERVER_PORT': '12345',
+      'FIXTURE_SERVER_URL': 'http://localhost:12345'
+    },
     'bstack:options' : {
         "appProfiling" : "true",
         "local": "true",
