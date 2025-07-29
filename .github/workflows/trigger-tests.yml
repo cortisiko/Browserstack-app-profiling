@@ -55,22 +55,22 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       
-      # - name: BrowserStack Env Setup
-      #   uses: browserstack/github-actions/setup-env@master
-      #   with:
-      #     username: ${{ secrets.BROWSERSTACK_USERNAME }}
-      #     access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-      #     build-name: ${{ github.repository }}-${{ github.event.inputs.branch_name || 'main' }}-${{ github.event.inputs.device || 'Xiaomi Redmi Note 11' }}-run-${{ github.run_number }}
-      #     project-name: ${{ github.repository }}
+      - name: BrowserStack Env Setup
+        uses: browserstack/github-actions/setup-env@master
+        with:
+          username: ${{ secrets.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          build-name: ${{ github.repository }}-${{ github.event.inputs.branch_name || 'main' }}-${{ github.event.inputs.device || 'Xiaomi Redmi Note 11' }}-run-${{ github.run_number }}
+          project-name: ${{ github.repository }}
       
-      # - name: Setup BrowserStack Local
-      #   uses: browserstack/github-actions/setup-local@master
-      #   with:
-      #     local-testing: start
-      #     local-identifier: ${{ github.run_id }}
-      #     local-args: --force-local
+      - name: Setup BrowserStack Local
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: start
+          local-identifier: ${{ github.run_id }}
+          local-args: --force-local
       
-      # - name: Wait for BrowserStack Local
+      - name: Wait for BrowserStack Local
         run: |
           echo "Waiting for BrowserStack Local to be ready..."
           sleep 30
