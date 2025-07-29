@@ -9,7 +9,7 @@ import ADB from "appium-adb";
 import Accounts from "../../wdio/helpers/Accounts";
 import LoginScreen from "../../wdio/screen-objects/LoginScreen";
 import WalletMainScreen from "../../wdio/screen-objects/WalletMainScreen";
-import { restartBrowserStackLocal } from "../utils/browserstack-helper";
+import { ensureBrowserStackLocalAccess, getTunnelDiagnostics } from "../utils/browserstack-helper";
 
 declare const driver: any;
 
@@ -25,7 +25,6 @@ describe("Fixture Server Login Test", () => {
     console.log("=== Starting fixture server with login state ===");
     const state = new FixtureBuilder().withGanacheNetwork().withChainPermission().build();
     await startFixtureServer(fixtureServer);
-    await loadFixture(fixtureServer, { fixture: state });
     
     // Restart BrowserStack Local tunnel after fixture server is loaded
     const capabilities = await driver.getSession();
@@ -36,15 +35,28 @@ describe("Fixture Server Login Test", () => {
     console.log("isBrowserStack", isBrowserStack);
 
     if (isBrowserStack) {
-      console.log("=== Restarting BrowserStack Local tunnel for fixture access ===");
+      console.log("=== Ensuring BrowserStack Local tunnel can access fixture server ===");
       try {
-        await restartBrowserStackLocal();
-        console.log("✅ BrowserStack Local tunnel restarted successfully");
+        await ensureBrowserStackLocalAccess();
+        console.log("✅ BrowserStack Local tunnel is accessible and working");
       } catch (error) {
-        console.warn("⚠️ Failed to restart BrowserStack Local tunnel:", error);
-        console.log("Continuing with existing tunnel...");
+        console.error("❌ CRITICAL: BrowserStack Local tunnel failed to establish connection to fixture server");
+        console.error("❌ The app cannot connect to fixture server, which will cause test failures");
+        
+        // Get diagnostic information
+        const diagnostics = await getTunnelDiagnostics();
+        console.error("❌ Diagnostic information:");
+        console.error("  - Tunnel running:", diagnostics.tunnelRunning);
+        console.error("  - Fixture server accessible:", diagnostics.fixtureServerAccessible);
+        console.error("  - Environment variables:", diagnostics.environmentVariables);
+        console.error("  - Tunnel status:", diagnostics.tunnelStatus);
+        console.error("❌ Error details:", error.message);
+        
+        // Skip the entire test suite
+        throw new Error('BrowserStack Local tunnel failed - test skipped to prevent false failures');
       }
     }
+    await loadFixture(fixtureServer, { fixture: state });
 
     await driver.pause(5000);
     const bundleId = "io.metamask.qa";
