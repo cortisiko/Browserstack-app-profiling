@@ -35,6 +35,16 @@ export async function restartBrowserStackLocal() {
     console.log('Waiting for tunnel to be ready...');
     await new Promise(resolve => setTimeout(resolve, 5000));
     
+    // Verify fixture server is accessible via curl
+    console.log('Verifying fixture server accessibility...');
+    try {
+      const { stdout } = await execAsync('curl -s http://localhost:12345/state.json');
+      console.log('✅ Fixture server state accessible via curl:');
+      console.log('State preview:', stdout.substring(0, 200) + '...');
+    } catch (error) {
+      console.warn('⚠️ Could not access fixture server via curl:', error.message);
+    }
+    
     console.log('✅ BrowserStack Local tunnel restarted successfully');
     
   } catch (error) {
