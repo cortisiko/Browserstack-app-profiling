@@ -58,13 +58,13 @@ jobs:
           cd fixture-server
           yarn install --frozen-lockfile
       
-      - name: Start Fixture Server
-        run: |
-          echo "Starting fixture server..."
-          cd fixture-server
-          yarn start & cd ..
-          echo "Fixture server started in background"
-          sleep 5
+      # - name: Start Fixture Server
+      #   run: |
+      #     echo "Starting fixture server..."
+      #     cd fixture-server
+      #     yarn start & cd ..
+      #     echo "Fixture server started in background"
+      #     sleep 5
       
       - name: BrowserStack Env Setup
         uses: browserstack/github-actions/setup-env@4478e16186f38e5be07721931642e65a028713c3
@@ -97,12 +97,12 @@ jobs:
           echo "OS Version: ${{ env.BROWSERSTACK_OS_VERSION }}"
           yarn test:wdio:mocha:browserstack
       
-      - name: Stop Fixture Server
-        if: always()
-        run: |
-          echo "Stopping fixture server..."
-          pkill -f "yarn start" || true
-          echo "Fixture server stopped"
+      # - name: Stop Fixture Server
+      #   if: always()
+      #   run: |
+      #     echo "Stopping fixture server..."
+      #     pkill -f "yarn start" || true
+      #     echo "Fixture server stopped"
       
       - name: 'BrowserStackLocal Stop'
         if: always()
