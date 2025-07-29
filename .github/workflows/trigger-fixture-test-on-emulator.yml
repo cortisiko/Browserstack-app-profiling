@@ -1,40 +1,15 @@
 name: Performance Test Manual WorkFlow using emulator
 
 on:
-  workflow_dispatch:
-    inputs:
-      info:
-        description: 'For available devices and OS versions, visit: https://www.browserstack.com/list-of-browsers-and-platforms/app_automate'
-        required: false
-        default: 'Info: Visit the link above for device and OS options'
-        type: string
-      branch_name:
-        description: 'Branch name to run tests on'
-        required: true
-        default: 'main'
-        type: string
-      device:
-        description: 'Device to run tests on (e.g., Xiaomi Redmi Note 11)'
-        required: false
-        default: 'Xiaomi Redmi Note 11'
-        type: string
-      os_version:
-        description: 'OS Version (e.g., 11.0)'
-        required: false
-        default: '11.0'
-        type: string
-      browserstack_app_url:
-        description: 'Browserstack app URL'
-        required: true
-        type: string
-
+  push:
+  pull_request:
 jobs:
   run-performance-test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      BROWSERSTACK_DEVICE: ${{ github.event.inputs.device || 'Xiaomi Redmi Note 11' }}
-      BROWSERSTACK_OS_VERSION: ${{ github.event.inputs.os_version || '11.0' }}
+      BROWSERSTACK_DEVICE: 'Xiaomi Redmi Note 11'
+      BROWSERSTACK_OS_VERSION: '11.0'
       BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
       BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
       MM_TEST_ACCOUNT_SRP: ${{ secrets.MM_TEST_ACCOUNT_SRP }}
@@ -42,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch_name || 'main' }}
+          ref: main
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -192,7 +167,7 @@ jobs:
           BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
           APK_PATH: ./7.45.2.apk
         run: |
-          echo "Running tests on branch: ${{ github.event.inputs.branch_name || 'main' }}"
+          echo "Running tests on branch: main"
           echo "Device: ${{ env.BROWSERSTACK_DEVICE }}"
           echo "OS Version: ${{ env.BROWSERSTACK_OS_VERSION }}"
           yarn test:wdio:mocha
