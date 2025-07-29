@@ -77,9 +77,8 @@ jobs:
       #     echo "BrowserStack Local should be ready now"
       
       - name: Run Android Performance Tests
-        # env:
-        #   # BROWSERSTACK_LOCAL: true
-        #   # BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
+        env:
+          BROWSERSTACK_LOCAL: false
         run: |
           echo "Running tests on branch: ${{ github.event.inputs.branch_name || 'main' }}"
           echo "Device: ${{ env.BROWSERSTACK_DEVICE }}"

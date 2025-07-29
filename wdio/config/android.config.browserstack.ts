@@ -36,7 +36,7 @@ const defaultCapabilities = [
     'appium:app': 'bs://0d0b48d657c5b1ff8b20322c8e085aa1367f4221',
     'bstack:options' : {
         "appProfiling" : "true",
-        "local": "true",
+        "local": process.env.BROWSERSTACK_LOCAL === 'true' ? "true" : "false",
         "localIdentifier": process.env.GITHUB_RUN_ID,
         "networkLogs": "true",
         "networkLogsOptions": {
@@ -59,9 +59,9 @@ const upgradeCapabilities = [
     'appium:app': 'bs://fe177e6812d80eb1ff6af844060e3f04cc55678a',
     'bstack:options' : {
       "appProfiling" : "true",
-      "local": "true",
+      "local": process.env.BROWSERSTACK_LOCAL === 'true' ? "true" : "false",
       "debug": true,
-      "localIdentifier": process.env.GITHUB_RUN_ID,
+      "localIdentifier": process.env.BROWSERSTACK_LOCAL_IDENTIFIER || process.env.GITHUB_RUN_ID,
       "midSessionInstallApps" : [process.env.BROWSERSTACK_ANDROID_APP_URL],
       "networkLogs": "true",
       "networkLogsOptions": {
