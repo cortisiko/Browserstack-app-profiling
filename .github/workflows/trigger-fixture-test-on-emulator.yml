@@ -161,6 +161,11 @@ jobs:
           name: emulator-screenshot
           path: screenshot.png
       
+      - name: Run appium server    
+        run: |
+          echo "Running appium server..."
+          appium --port 4723
+
       - name: Run Android Performance Tests
         env:
           BROWSERSTACK_LOCAL: true
