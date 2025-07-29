@@ -22,7 +22,7 @@ describe("Fixture Server Login Test", () => {
     validAccount = Accounts.getValidAccount();
 
     console.log("=== Starting fixture server with login state ===");
-    const state = new FixtureBuilder().build();
+    const state = new FixtureBuilder().withGanacheNetwork().withChainPermission().build();
     await startFixtureServer(fixtureServer);
     await loadFixture(fixtureServer, { fixture: state });
     await driver.pause(5000);
@@ -55,9 +55,9 @@ describe("Fixture Server Login Test", () => {
     await LoginScreen.tapUnlockButton();
   });
 
-  after(async () => {
-    await stopFixtureServer(fixtureServer);
-  });
+  // after(async () => {
+  //   await stopFixtureServer(fixtureServer);
+  // });
 
   it("should verify fixture server provides logged-in state", async () => {
     // Given I am on the wallet screen
@@ -86,7 +86,9 @@ describe("Fixture Server Login Test", () => {
     if (!(await walletContainer.isDisplayed())) {
       throw new Error("Wallet container should be displayed");
     }
-
     console.log("Wallet features are accessible without password prompt");
+
+    await driver.pause(500000);
+
   });
 });
