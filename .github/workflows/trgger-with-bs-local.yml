@@ -1,0 +1,111 @@
+name: Performance Test Manual WorkFlow using BrowserStack Local
+
+on:
+  workflow_dispatch:
+    inputs:
+      info:
+        description: 'For available devices and OS versions, visit: https://www.browserstack.com/list-of-browsers-and-platforms/app_automate'
+        required: false
+        default: 'Info: Visit the link above for device and OS options'
+        type: string
+      branch_name:
+        description: 'Branch name to run tests on'
+        required: true
+        default: 'main'
+        type: string
+      device:
+        description: 'Device to run tests on (e.g., Xiaomi Redmi Note 11)'
+        required: false
+        default: 'Xiaomi Redmi Note 11'
+        type: string
+      os_version:
+        description: 'OS Version (e.g., 11.0)'
+        required: false
+        default: '11.0'
+        type: string
+      browserstack_app_url:
+        description: 'Browserstack app URL'
+        required: true
+        type: string
+
+jobs:
+  run-performance-test:
+    runs-on: ubuntu-latest
+    env:
+      BROWSERSTACK_DEVICE: ${{ github.event.inputs.device || 'Xiaomi Redmi Note 11' }}
+      BROWSERSTACK_OS_VERSION: ${{ github.event.inputs.os_version || '11.0' }}
+      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      MM_TEST_ACCOUNT_SRP: ${{ secrets.MM_TEST_ACCOUNT_SRP }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch_name || 'main' }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.1'
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      
+      - name: Install Fixture Server Dependencies
+        run: |
+          echo "Installing fixture server dependencies..."
+          cd fixture-server
+          yarn install --frozen-lockfile
+      
+      - name: Start Fixture Server
+        run: |
+          echo "Starting fixture server..."
+          cd fixture-server
+          yarn start & cd ..
+          echo "Fixture server started in background"
+          sleep 5
+      
+      - name: BrowserStack Env Setup
+        uses: browserstack/github-actions/setup-env@4478e16186f38e5be07721931642e65a028713c3
+        with:
+          username: ${{ secrets.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          build-name: ${{ github.repository }}-${{ github.event.inputs.branch_name || 'main' }}-${{ github.event.inputs.device || 'Xiaomi Redmi Note 11' }}-run-${{ github.run_number }}
+          project-name: ${{ github.repository }}
+      
+      - name: Setup BrowserStack Local
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: start
+          local-identifier: ${{ github.run_id }}
+          local-args: --force-local
+      
+      - name: Wait for BrowserStack Local
+        run: |
+          echo "Waiting for BrowserStack Local to be ready..."
+          sleep 30
+          echo "BrowserStack Local should be ready now"
+      
+      - name: Run Android Performance Tests
+        env:
+          BROWSERSTACK_LOCAL: true
+          BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
+        run: |
+          echo "Running tests on branch: ${{ github.event.inputs.branch_name || 'main' }}"
+          echo "Device: ${{ env.BROWSERSTACK_DEVICE }}"
+          echo "OS Version: ${{ env.BROWSERSTACK_OS_VERSION }}"
+          yarn test:wdio:mocha:browserstack
+      
+      - name: Stop Fixture Server
+        if: always()
+        run: |
+          echo "Stopping fixture server..."
+          pkill -f "yarn start" || true
+          echo "Fixture server stopped"
+      
+      - name: 'BrowserStackLocal Stop'
+        if: always()
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: stop
