@@ -9,6 +9,7 @@ import ADB from "appium-adb";
 import Accounts from "../../wdio/helpers/Accounts";
 import LoginScreen from "../../wdio/screen-objects/LoginScreen";
 import WalletMainScreen from "../../wdio/screen-objects/WalletMainScreen";
+import { restartBrowserStackLocal } from "../utils/browserstack-helper";
 
 declare const driver: any;
 
@@ -22,18 +23,31 @@ describe("Fixture Server Login Test", () => {
     validAccount = Accounts.getValidAccount();
 
     console.log("=== Starting fixture server with login state ===");
-    const state = new FixtureBuilder().build();
+    const state = new FixtureBuilder().withGanacheNetwork().withChainPermission().build();
     await startFixtureServer(fixtureServer);
     await loadFixture(fixtureServer, { fixture: state });
-    await driver.pause(5000);
-    const bundleId = "io.metamask.qa";
-
+    
+    // Restart BrowserStack Local tunnel after fixture server is loaded
     const capabilities = await driver.getSession();
     const isBrowserStack =
       capabilities["bstack:options"] ||
       process.argv.includes("browserstack.conf.ts");
 
     console.log("isBrowserStack", isBrowserStack);
+
+    if (isBrowserStack) {
+      console.log("=== Restarting BrowserStack Local tunnel for fixture access ===");
+      try {
+        await restartBrowserStackLocal();
+        console.log("✅ BrowserStack Local tunnel restarted successfully");
+      } catch (error) {
+        console.warn("⚠️ Failed to restart BrowserStack Local tunnel:", error);
+        console.log("Continuing with existing tunnel...");
+      }
+    }
+
+    await driver.pause(5000);
+    const bundleId = "io.metamask.qa";
 
     if (!isBrowserStack) {
       if (driver.capabilities.platformName === "Android") {
@@ -86,7 +100,7 @@ describe("Fixture Server Login Test", () => {
     if (!(await walletContainer.isDisplayed())) {
       throw new Error("Wallet container should be displayed");
     }
-
     console.log("Wallet features are accessible without password prompt");
+
   });
 });
