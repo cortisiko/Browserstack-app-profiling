@@ -64,6 +64,7 @@ jobs:
         env:
           BROWSERSTACK_LOCAL: true
           BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
+          BROWSERSTACK_CI: true
         run: |
           yarn test:wdio:mocha:browserstack
 
