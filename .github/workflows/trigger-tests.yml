@@ -39,14 +39,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Set up Node.js
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-      
+          node-version: '20.18.1'
+          cache: 'yarn'
+
       - name: Install dependencies
-        run: yarn setup
+        run: yarn install --frozen-lockfile
 
       - name: BrowserStack Env Setup
         uses: browserstack/github-actions/setup-env@4478e16186f38e5be07721931642e65a028713c3
@@ -55,7 +56,7 @@ jobs:
           access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
           build-name: ${{ github.repository }}-${{ github.ref_name }}-${{ github.event.inputs.device || 'Xiaomi Redmi Note 11' }}-run-${{ github.run_number }}
           project-name: ${{ github.repository }}
-      
+
       - name: Run Android Performance Tests
         env:
           BROWSERSTACK_LOCAL: true
