@@ -71,6 +71,10 @@ class FixtureServer {
     this._stateMap = new Map([[DEFAULT_STATE_KEY, Object.create(null)]]);
 
     this._app.use(async (ctx) => {
+      // Log all incoming requests
+      console.log(`📡 Fixture server received request: ${ctx.method} ${ctx.path} from ${ctx.ip || 'unknown'}`);
+      console.log(`📡 Request headers: ${JSON.stringify(ctx.headers)}`);
+      
       // Middleware to handle requests
       ctx.set('Access-Control-Allow-Origin', '*');
       ctx.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -80,7 +84,10 @@ class FixtureServer {
       );
       // Check if it's a request for the current state
       if (this._isStateRequest(ctx)) {
+        console.log(`✅ Serving state.json to ${ctx.ip || 'unknown'}`);
         ctx.body = this._stateMap.get(CURRENT_STATE_KEY);
+      } else {
+        console.log(`❌ Unknown request path: ${ctx.path}`);
       }
     });
   }
