@@ -52,16 +52,20 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       
-      # - name: Install Fixture Server Dependencies
-      #   run: |
-      #     echo "Installing fixture server dependencies..."
-      #     cd fixture-server
-      #     yarn install --frozen-lockfile
-      
-      - name: Start E2E Fixture Server
+      - name: Install Fixture Server Dependencies
         run: |
-          echo "Starting E2E fixture server..."
-          yarn start:fixture-server &
+          echo "Installing fixture server dependencies..."
+          cd fixture-server
+          yarn install --frozen-lockfile
+      
+      - name: Start Fixture Server
+        run: |
+          echo "Starting fixture server..."
+          cd fixture-server
+          yarn start & cd ..
+          echo "Fixture server started in background"
+          sleep 5
+      
       - name: BrowserStack Env Setup
         uses: browserstack/github-actions/setup-env@4478e16186f38e5be07721931642e65a028713c3
         with:
@@ -87,7 +91,6 @@ jobs:
         env:
           BROWSERSTACK_LOCAL: true
           BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
-          BROWSERSTACK_CI: true
         run: |
           echo "Running tests on branch: ${{ github.event.inputs.branch_name || 'main' }}"
           echo "Device: ${{ env.BROWSERSTACK_DEVICE }}"
@@ -98,15 +101,8 @@ jobs:
         if: always()
         run: |
           echo "Stopping fixture server..."
-          pkill -f "yarn start:fixture-server" || true
+          pkill -f "yarn start" || true
           echo "Fixture server stopped"
-      
-      - name: Stop E2E Fixture Server
-        if: always()
-        run: |
-          echo "Stopping E2E fixture server..."
-          pkill -f "start-e2e-fixture-server" || true
-          echo "E2E fixture server stopped"
       
       - name: 'BrowserStackLocal Stop'
         if: always()

@@ -21,19 +21,10 @@ describe("Fixture Server Login Test", () => {
   before(async () => {
     validAccount = Accounts.getValidAccount();
 
-    const state = new FixtureBuilder().withGanacheNetwork().withChainPermission().build();
-    
-    const isBrowserStackCI = process.env.BROWSERSTACK_CI === 'true';
-    
-    if (!isBrowserStackCI) {
-      console.log("🔄 Starting fixture server (not on BrowserStack CI)");
-      await startFixtureServer(fixtureServer);
-      await loadFixture(fixtureServer, { fixture: state });
-    } else {
-      console.log("✅ Using existing fixture server from CI");
-      // On BrowserStack, we need to load fixture data directly without HTTP verification
-      fixtureServer.loadJsonState(state);
-    }
+    console.log("=== Starting fixture server with login state ===");
+    const state = new FixtureBuilder().build();
+    await startFixtureServer(fixtureServer);
+    await loadFixture(fixtureServer, { fixture: state });
     await driver.pause(5000);
     const bundleId = "io.metamask.qa";
 
