@@ -28,11 +28,12 @@ describe("Fixture Server Login Test", () => {
     if (!isBrowserStackCI) {
       console.log("🔄 Starting fixture server (not on BrowserStack CI)");
       await startFixtureServer(fixtureServer);
+      await loadFixture(fixtureServer, { fixture: state });
     } else {
       console.log("✅ Using existing fixture server from CI");
+      // On BrowserStack, we need to load fixture data directly without HTTP verification
+      fixtureServer.loadJsonState(state);
     }
-    
-    await loadFixture(fixtureServer, { fixture: state });
     await driver.pause(5000);
     const bundleId = "io.metamask.qa";
 

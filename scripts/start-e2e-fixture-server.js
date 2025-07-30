@@ -4,7 +4,7 @@ const Koa = require('koa');
 
 const CURRENT_STATE_KEY = '__CURRENT__';
 const DEFAULT_STATE_KEY = '__DEFAULT__';
-const FIXTURE_SERVER_HOST = 'localhost';
+const FIXTURE_SERVER_HOST = '0.0.0.0'; // Make it network accessible for BrowserStack
 const DEFAULT_FIXTURE_SERVER_PORT = 12345;
 
 function getFixturesServerPort() {
