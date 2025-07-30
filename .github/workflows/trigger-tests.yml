@@ -1,4 +1,5 @@
-name: Performance Test Manual WorkFlow using app relaunch on BrowserStack
+name: Performance Test Manual WorkFlow
+
 
 on:
   workflow_dispatch:
