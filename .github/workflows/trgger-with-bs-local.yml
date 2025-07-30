@@ -60,9 +60,8 @@ jobs:
       
       - name: Start E2E Fixture Server
         run: |
-          yarn start:fixture-server
-          echo "Fixture server started in background"
-      
+          echo "Starting E2E fixture server..."
+          yarn start:fixture-server &
       - name: BrowserStack Env Setup
         uses: browserstack/github-actions/setup-env@4478e16186f38e5be07721931642e65a028713c3
         with:
