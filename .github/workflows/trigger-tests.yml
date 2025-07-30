@@ -1,4 +1,4 @@
-name: Performance Test Manual WorkFlow
+name: Performance Test Manual WorkFlow using BrowserStack Local
 
 on:
   workflow_dispatch:
@@ -7,6 +7,11 @@ on:
         description: 'For available devices and OS versions, visit: https://www.browserstack.com/list-of-browsers-and-platforms/app_automate'
         required: false
         default: 'Info: Visit the link above for device and OS options'
+        type: string
+      branch_name:
+        description: 'Branch name to run tests on'
+        required: true
+        default: 'main'
         type: string
       device:
         description: 'Device to run tests on (e.g., Xiaomi Redmi Note 11)'
@@ -19,12 +24,21 @@ on:
         default: '11.0'
         type: string
       browserstack_app_url:
-        description: 'Browserstack App URL'
+        description: 'Browserstack app URL'
         required: true
         type: string
-  # schedule:
-  #   # Every 3 hours on main branch
-  #   - cron: '0 */3 * * *'
+  
+
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+  BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+  MM_TEST_ACCOUNT_SRP: ${{ secrets.MM_TEST_ACCOUNT_SRP }}
 
 jobs:
   run-performance-test:
@@ -34,18 +48,19 @@ jobs:
       BROWSERSTACK_OS_VERSION: ${{ github.event.inputs.os_version || '11.0' }}
       BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
       BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-      BROWSERSTACK_ANDROID_APP_URL: ${{ github.event.inputs.browserstack_app_url }}
       MM_TEST_ACCOUNT_SRP: ${{ secrets.MM_TEST_ACCOUNT_SRP }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+        with:
+          ref: ${{ github.event.inputs.branch_name || 'main' }}
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.18.1'
           cache: 'yarn'
-
+      
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
@@ -54,15 +69,35 @@ jobs:
         with:
           username: ${{ secrets.BROWSERSTACK_USERNAME }}
           access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-          build-name: ${{ github.repository }}-${{ github.ref_name }}-${{ github.event.inputs.device || 'Xiaomi Redmi Note 11' }}-run-${{ github.run_number }}
+          build-name: ${{ github.repository }}-${{ github.event.inputs.branch_name || 'main' }}-${{ github.event.inputs.device || 'Xiaomi Redmi Note 11' }}-run-${{ github.run_number }}
           project-name: ${{ github.repository }}
-
+      
+      - name: Setup BrowserStack Local
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: start
+          local-identifier: ${{ github.run_id }}
+          local-args: --force-local
+      
+      - name: Wait for BrowserStack Local
+        run: |
+          echo "Waiting for BrowserStack Local to be ready..."
+          sleep 30
+          echo "BrowserStack Local should be ready now"
+      
       - name: Run Android Performance Tests
         env:
           BROWSERSTACK_LOCAL: true
           BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
+          BROWSERSTACK_CI: true
         run: |
-          echo "Running tests on branch: ${{ github.ref_name }}"
+          echo "Running tests on branch: ${{ github.event.inputs.branch_name || 'main' }}"
           echo "Device: ${{ env.BROWSERSTACK_DEVICE }}"
           echo "OS Version: ${{ env.BROWSERSTACK_OS_VERSION }}"
-          yarn test:wdio:android:browserstack --performance
+          yarn test:wdio:mocha:browserstack
+
+      - name: 'BrowserStackLocal Stop'
+        if: always()
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: stop
