@@ -2,6 +2,7 @@
   "name": "browserstack-tests",
   "private": true,
   "scripts": {
+    "start:fixture-server": "node scripts/start-e2e-fixture-server.js",
     "install:foundryup": "yarn mm-foundryup",
     "anvil": "node_modules/.bin/anvil",
     "lint": "eslint '**/*.{js,ts,tsx}'",
