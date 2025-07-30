@@ -55,9 +55,9 @@ describe("Fixture Server Login Test", () => {
     await LoginScreen.tapUnlockButton();
   });
 
-  after(async () => {
-    await stopFixtureServer(fixtureServer);
-  });
+  // after(async () => {
+  //   await stopFixtureServer(fixtureServer);
+  // });
 
   it("should verify fixture server provides logged-in state", async () => {
     // Given I am on the wallet screen
@@ -87,6 +87,7 @@ describe("Fixture Server Login Test", () => {
       throw new Error("Wallet container should be displayed");
     }
 
-    console.log("Wallet features are accessible without password prompt");
+    await driver.pause(500000);
+
   });
 });
