@@ -25,7 +25,8 @@ describe("Fixture Server Login Test", () => {
     console.log("=== Starting fixture server with login state ===");
     const state = new FixtureBuilder().withGanacheNetwork().withChainPermission().build();
     await startFixtureServer(fixtureServer);
-    
+    await loadFixture(fixtureServer, { fixture: state });
+
     // Restart BrowserStack Local tunnel after fixture server is loaded
     const capabilities = await driver.getSession();
     const isBrowserStack =
@@ -56,7 +57,6 @@ describe("Fixture Server Login Test", () => {
         throw new Error('BrowserStack Local tunnel failed - test skipped to prevent false failures');
       }
     }
-    await loadFixture(fixtureServer, { fixture: state });
 
     await driver.pause(5000);
     const bundleId = "io.metamask.qa";
