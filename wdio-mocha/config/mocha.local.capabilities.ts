@@ -7,7 +7,7 @@ import { config } from './wdio.mocha.conf.js';
     'appium:fullReset': false,
     'appium:deviceName': 'emulator-5554',
     'appium:platformVersion': '14',
-    'appium:app': process.env.APK_PATH || './7.45.2.apk',
+    'appium:app': '/Users/curtisdavid/Downloads/7.45.2.apk',
     'appium:automationName': 'uiautomator2',
   }
 ];
