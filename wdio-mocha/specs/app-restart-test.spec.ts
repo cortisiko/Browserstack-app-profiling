@@ -54,7 +54,7 @@ describe("App Restart Test", () => {
     
     // Step 2: Terminate the app
     console.log("2. Terminating app...");
-    const platform = await driver.getPlatform();
+    const platform = await driver.getCapabilities().then(caps => caps.get('platformName'));
 
     await driver.terminateApp(platform === 'ios' ? 'io.metamask.MetaMask-QA' : 'io.metamask.qa');
     

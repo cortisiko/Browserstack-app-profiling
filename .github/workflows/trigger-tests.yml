@@ -71,7 +71,7 @@ jobs:
         with:
           local-testing: start
           local-identifier: ${{ github.run_id }}
-          local-args: --force-local
+          local-args: --force-local --verbose
       
       - name: Wait for BrowserStack Local
         run: |
