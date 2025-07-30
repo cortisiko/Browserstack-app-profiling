@@ -25,7 +25,7 @@ const getFixturesPort =
   typeof getFixturesServerPort === 'function'
     ? getFixturesServerPort
     : () => DEFAULT_FIXTURE_SERVER_PORT;
-const FIXTURE_SERVER_URL = `http://localhost:${getFixturesPort()}/state.json`;
+const FIXTURE_SERVER_URL = `http://0.0.0.0:${getFixturesPort()}/state.json`;
 
 // Helper constant for multichain testing
 export const DEFAULT_MULTICHAIN_TEST_DAPP_FIXTURE_OPTIONS = {
