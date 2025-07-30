@@ -69,7 +69,7 @@ describe("App Restart Test", () => {
   }
 
   if (platform === 'Android') {
-    await driver.startActivity('io.metamask.qa', 'io.metamask.MainActivity');
+    await driver.activateApp('io.metamask.qa');
   }
     
     // Step 5: Wait for app to stabilize
