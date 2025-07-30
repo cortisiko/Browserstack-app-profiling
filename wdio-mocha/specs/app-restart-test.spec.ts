@@ -36,10 +36,6 @@ describe("App Restart Test", () => {
     // }
     await startFixtureServer(fixtureServer);
     await loadFixture(fixtureServer, { fixture: state });
-
-    // After loading fixture state, ensure BrowserStack Local tunnel can access it
-    console.log("🔄 Ensuring BrowserStack Local tunnel can access loaded fixture state...");
-    await ensureBrowserStackLocalAccess();
       
     await driver.pause(5000);
   });
