@@ -15,7 +15,7 @@ declare const driver: any;
 
 const fixtureServer = new FixtureServer();
 
-describe.skip("Fixture Server Login Test", () => {
+describe("Fixture Server Login Test", () => {
   let validAccount: any;
 
   // Setup before each test (equivalent to Cucumber Background)
