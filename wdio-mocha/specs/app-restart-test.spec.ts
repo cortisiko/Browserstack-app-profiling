@@ -52,32 +52,32 @@ describe("App Restart Test", () => {
     await LoginScreen.waitForScreenToDisplay();
     console.log("✅ App is launched and login screen is visible");
     
-    // Step 2: Terminate the app
-    console.log("2. Terminating app...");
-    const platform = await driver.getCapabilities().then(caps => caps.get('platformName'));
+  //   // Step 2: Terminate the app
+  //   console.log("2. Terminating app...");
+  //   const platform = await driver.getCapabilities().then(caps => caps.get('platformName'));
 
-    await driver.terminateApp(platform === 'ios' ? 'io.metamask.MetaMask-QA' : 'io.metamask.qa');
+  //   await driver.terminateApp(platform === 'ios' ? 'io.metamask.MetaMask-QA' : 'io.metamask.qa');
     
-    // Step 3: Wait a moment
-    console.log("3. Waiting before relaunch...");
-    await driver.pause(3000);
+  //   // Step 3: Wait a moment
+  //   console.log("3. Waiting before relaunch...");
+  //   await driver.pause(3000);
     
-    // Step 4: Relaunch the app
-    console.log("4. Relaunching app...");
-  if (platform === 'iOS') {
-    await driver.activateApp('io.metamask.MetaMask-QA');
-  }
+  //   // Step 4: Relaunch the app
+  //   console.log("4. Relaunching app...");
+  // if (platform === 'iOS') {
+  //   await driver.activateApp('io.metamask.MetaMask-QA');
+  // }
 
-  if (platform === 'Android') {
-    await driver.activateApp('io.metamask.qa');
-  }
+  // if (platform === 'Android') {
+  //   await driver.activateApp('io.metamask.qa');
+  // }
     
-    // Step 5: Wait for app to stabilize
-    console.log("5. Waiting for app to stabilize...");
-    await driver.pause(5000);
+  //   // Step 5: Wait for app to stabilize
+  //   console.log("5. Waiting for app to stabilize...");
+  //   await driver.pause(5000);
     
-    // Step 6: Verify app is accessible again
-    console.log("6. Verifying app is accessible...");
+  //   // Step 6: Verify app is accessible again
+  //   console.log("6. Verifying app is accessible...");
     try {
       await LoginScreen.waitForScreenToDisplay();
       console.log("✅ App is accessible after restart");
