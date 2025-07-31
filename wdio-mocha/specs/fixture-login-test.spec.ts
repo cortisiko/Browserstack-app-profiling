@@ -10,9 +10,6 @@ import Accounts from "../../wdio/helpers/Accounts";
 import LoginScreen from "../../wdio/screen-objects/LoginScreen";
 import WalletMainScreen from "../../wdio/screen-objects/WalletMainScreen";
 import { ensureBrowserStackLocalAccess } from "../utils/browserstack-tunnel-helper";
-import { exec } from 'child_process';
-import { promisify } from 'util';
-const execAsync = promisify(exec);
 
 declare const driver: any;
 
@@ -36,10 +33,7 @@ describe("Fixture Server Login Test", () => {
     // After loading fixture state, ensure BrowserStack Local tunnel can access it
     console.log("🔄 Ensuring BrowserStack Local tunnel can access loaded fixture state...");
     // await ensureBrowserStackLocalAccess();
-    const { stdout } = await execAsync('curl -s http://0.0.0.0:14721/state.json');
-    console.log('✅ Tunnel can access fixture server:');
-    console.log('State preview:', stdout.substring(0, 200) + '...');
-    console.log('✅ BrowserStack Local tunnel is accessible and working');
+    
     await driver.pause(5000);
     const bundleId = "io.metamask.qa";
 
