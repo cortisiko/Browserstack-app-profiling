@@ -17,9 +17,6 @@ function transformToValidPort(defaultPort, pid) {
 }
 
 function getServerPort(defaultPort) {
-  if (process.env.CI) {
-    return transformToValidPort(defaultPort, process.pid);
-  }
   return defaultPort;
 }
 

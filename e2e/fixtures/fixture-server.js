@@ -6,7 +6,7 @@ import { isObject, mapValues } from 'lodash';
 const CURRENT_STATE_KEY = '__CURRENT__';
 const DEFAULT_STATE_KEY = '__DEFAULT__';
 
-const FIXTURE_SERVER_HOST = '0.0.0.0'; // Listen on all interfaces for BrowserStack tunnel access
+const FIXTURE_SERVER_HOST = 'localhost';
 export const DEFAULT_FIXTURE_SERVER_PORT = 12345;
 
 const fixtureSubstitutionPrefix = '__FIXTURE_SUBSTITUTION__';
