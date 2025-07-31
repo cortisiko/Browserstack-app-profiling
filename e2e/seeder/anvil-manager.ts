@@ -1,6 +1,5 @@
 import { createAnvil, Anvil as AnvilType } from '@viem/anvil';
 import { createAnvilClients } from './anvil-clients';
-import { AnvilPort } from '../fixtures/utils';
 import { AnvilNodeOptions } from '../framework/types';
 import { createLogger } from '../framework/logger';
 
@@ -8,7 +7,7 @@ const logger = createLogger({
   name: 'AnvilManager',
 });
 
-export const DEFAULT_ANVIL_PORT = 8545;
+export const ANVIL_PORT = 8545;
 
 /**
  * Represents the available Ethereum hardforks for the Anvil server
@@ -61,7 +60,7 @@ export const defaultOptions = {
   host: '127.0.0.1',
   mnemonic:
     'drive manage close raven tape average sausage pledge riot furnace august tip',
-  port: DEFAULT_ANVIL_PORT,
+  port: ANVIL_PORT,
   noMining: false,
 };
 
@@ -97,7 +96,7 @@ class AnvilManager {
    * @throws {Error} If server fails to start
    */
   async start(opts: AnvilNodeOptions = {}): Promise<void> {
-    const options = { ...defaultOptions, ...opts, port: AnvilPort() };
+    const options = { ...defaultOptions, ...opts, port: ANVIL_PORT };
     const { port } = options;
 
     try {
@@ -127,7 +126,7 @@ class AnvilManager {
     }
     const { walletClient, publicClient, testClient } = createAnvilClients(
       this.server.options.chainId ?? 1337,
-      this.server.options.port ?? AnvilPort(),
+      this.server.options.port ?? ANVIL_PORT,
     );
 
     return { walletClient, publicClient, testClient };

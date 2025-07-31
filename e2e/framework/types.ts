@@ -143,7 +143,6 @@ export type TestSuiteFunction = (params: TestSuiteParams) => Promise<void>;
 export type LocalNode = AnvilManager;
 
 export interface TestSuiteParams {
-  contractRegistry?: ContractAddressRegistry;
   mockServer?: Mockttp;
   localNodes?: LocalNode[];
 }

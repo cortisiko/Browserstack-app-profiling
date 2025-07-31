@@ -14,7 +14,10 @@ const defaultCapabilities = [
     'appium:build': 'Android App Profiling Tests',
     'appium:deviceName': process.env.BROWSERSTACK_DEVICE || 'Xiaomi Redmi Note 11',
     'appium:os_version': process.env.BROWSERSTACK_OS_VERSION || '11.0',
-    'appium:app': 'bs://1f15f8c932c7019f6bcd26d5f496c52dd45b12bd',
+    // 'appium:app': 'bs://1f15f8c932c7019f6bcd26d5f496c52dd45b12bd',
+    // 'appium:app': 'bs://f1eb1557acc5d30d8eda5ec6fe01a3909430b95f', // v 7.46.2
+    'appium:app': process.env.BROWSERSTACK_ANDROID_APP_URL,
+
     'bstack:options': {
       appProfiling: 'true',
       local: 'true',

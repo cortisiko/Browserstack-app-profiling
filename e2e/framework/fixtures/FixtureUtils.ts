@@ -3,7 +3,7 @@ import {
   Caip25EndowmentPermissionName,
 } from '@metamask/chain-agnostic-permission';
 
-import { DEFAULT_ANVIL_PORT } from '../../seeder/anvil-manager';
+import { ANVIL_PORT } from '../../seeder/anvil-manager';
 import {
   DEFAULT_FIXTURE_SERVER_PORT,
   DEFAULT_MOCKSERVER_PORT,
@@ -45,10 +45,10 @@ export function getTestDappLocalUrl(dappCounter: number) {
 export const TEST_DAPP_LOCAL_URL = `http://localhost:${getLocalTestDappPort()}`;
 
 export function getGanachePort(): number {
-  return getServerPort(12345);
+  return getServerPort(8546);
 }
 export function AnvilPort(): number {
-  return getServerPort(DEFAULT_ANVIL_PORT);
+  return getServerPort(ANVIL_PORT);
 }
 export function getFixturesServerPort(): number {
   return getServerPort(DEFAULT_FIXTURE_SERVER_PORT);
