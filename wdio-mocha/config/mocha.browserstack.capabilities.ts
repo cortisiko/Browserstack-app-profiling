@@ -18,6 +18,7 @@ const defaultCapabilities = [
     'bstack:options': {
       appProfiling: 'true',
       local: 'true',
+      interactiveDebugging: 'true',
       localIdentifier: process.env.GITHUB_RUN_ID,
       networkLogs: 'true',
       networkLogsOptions: {
