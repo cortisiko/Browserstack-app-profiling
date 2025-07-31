@@ -581,6 +581,7 @@ class FixtureBuilder {
           isAuthChecked: false,
           initialScreen: '',
           appTheme: 'os',
+          existingUser: true
         },
         wizard: {
           step: 0,
