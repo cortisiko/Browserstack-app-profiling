@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Browser from './BrowserView';
-import Matchers from '../../utils/Matchers';
+import Matchers from '../../framework/Matchers';
 import { BrowserViewSelectorsIDs } from '../../selectors/Browser/BrowserView.selectors';
 import {
   TestSnapViewSelectorWebIDS,
@@ -9,208 +9,202 @@ import {
   TestSnapBottomSheetSelectorWebIDS,
   EntropyDropDownSelectorWebIDS,
 } from '../../selectors/Browser/TestSnaps.selectors';
-import Gestures from '../../utils/Gestures';
-import {
-  SNAP_INSTALL_CONNECT,
-} from '../../../app/components/Approvals/InstallSnapApproval/components/InstallSnapConnectionRequest/InstallSnapConnectionRequest.constants';
-import {
-  SNAP_INSTALL_PERMISSIONS_REQUEST,
-  SNAP_INSTALL_PERMISSIONS_REQUEST_APPROVE,
-} from '../../../app/components/Approvals/InstallSnapApproval/components/InstallSnapPermissionsRequest/InstallSnapPermissionsRequest.constants';
+import Gestures from '../../framework/Gestures';
+import { SNAP_INSTALL_CONNECT } from '../../../app/components/Approvals/InstallSnapApproval/components/InstallSnapConnectionRequest/InstallSnapConnectionRequest.constants';
+import { SNAP_INSTALL_PERMISSIONS_REQUEST_APPROVE } from '../../../app/components/Approvals/InstallSnapApproval/components/InstallSnapPermissionsRequest/InstallSnapPermissionsRequest.constants';
 import { SNAP_INSTALL_OK } from '../../../app/components/Approvals/InstallSnapApproval/InstallSnapApproval.constants';
 import TestHelpers from '../../helpers';
+import Assertions from '../../framework/Assertions';
+import { IndexableWebElement } from 'detox/detox';
+import Utilities from '../../framework/Utilities';
+import LegacyGestures from '../../utils/Gestures';
+import { ConfirmationFooterSelectorIDs } from '../../selectors/Confirmation/ConfirmationView.selectors';
 
-export const TEST_SNAPS_URL = 'https://metamask.github.io/snaps/test-snaps/2.23.1/';
+export const TEST_SNAPS_URL =
+  'https://metamask.github.io/snaps/test-snaps/2.25.0/';
 
 class TestSnaps {
-  get container() {
-    return Matchers.getElementByID(BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID);
-  }
-
-  // Only the getters that are actually used
-  get getConnectBip44Button() {
-    return Matchers.getElementByWebID(
-      BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
-      TestSnapViewSelectorWebIDS.BIP_44_BUTTON_ID,
-    );
-  }
-
-  get getPublicKeyBip44Button() {
-    return Matchers.getElementByWebID(
-      BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
-      TestSnapViewSelectorWebIDS.PUBLIC_KEY_BIP44_BUTTON_ID,
-    );
-  }
-
-  get getSignBip44MessageButton() {
-    return Matchers.getElementByWebID(
-      BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
-      TestSnapViewSelectorWebIDS.SIGN_BIP44_MESSAGE_BUTTON_ID,
-    );
-  }
-
-  get getMessageBip44Input() {
-    return Matchers.getElementByWebID(
-      BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
-      TestSnapInputSelectorWebIDS.MESSAGE_BIP44_INPUT_ID,
-    );
-  }
-
-  get getEntropyDropDown() {
-    return Matchers.getElementByWebID(
-      BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
-      EntropyDropDownSelectorWebIDS.SNAP44_ENTROPY_DROP_DOWN,
-    );
-  }
-
-  get getBip44ResultSpan() {
-    return Matchers.getElementByWebID(
-      BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
-      TestSnapResultSelectorWebIDS.BIP44_RESULT_SPAN_ID,
-    );
-  }
-
-  get getConnectSnapButton() {
+  get getConnectSnapButton(): DetoxElement {
     return Matchers.getElementByID(SNAP_INSTALL_CONNECT);
   }
 
-  get getConnectSnapPermissionsRequestButton() {
-    return Matchers.getElementByID(SNAP_INSTALL_PERMISSIONS_REQUEST);
-  }
-
-  get getApproveSnapPermissionsRequestButton() {
+  get getApproveSnapPermissionsRequestButton(): DetoxElement {
     return Matchers.getElementByID(SNAP_INSTALL_PERMISSIONS_REQUEST_APPROVE);
   }
 
-  get getConnectSnapInstallOkButton() {
+  get getConnectSnapInstallOkButton(): DetoxElement {
     return Matchers.getElementByID(SNAP_INSTALL_OK);
   }
 
-  get getApproveSignRequestButton() {
+  get getApproveSignRequestButton(): DetoxElement {
     return Matchers.getElementByID(
       TestSnapBottomSheetSelectorWebIDS.BOTTOMSHEET_FOOTER_BUTTON_ID,
     );
   }
 
-  get getSignBip44MessageResultSpan() {
-    return Matchers.getElementByWebID(
+  get confirmSignatureButton(): DetoxElement {
+    return Matchers.getElementByID(
+      ConfirmationFooterSelectorIDs.CONFIRM_BUTTON,
+    );
+  }
+
+  async checkResultSpan(
+    selector: keyof typeof TestSnapResultSelectorWebIDS,
+    expectedMessage: string,
+  ): Promise<void> {
+    const webElement = (await Matchers.getElementByWebID(
       BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
-      TestSnapResultSelectorWebIDS.BIP44_SIGN_RESULT_SPAN_ID,
-    );
+      TestSnapResultSelectorWebIDS[selector],
+    )) as IndexableWebElement;
+
+    const actualText = await webElement.getText();
+    await Assertions.checkIfTextMatches(actualText, expectedMessage);
   }
 
-  // Only the methods that are actually used
-  async getBip44ResultText() {
-    const webElement = await this.getBip44ResultSpan;
-    return await (webElement as any).getText();
-  }
+  async checkResultSpanIncludes(
+    selector: keyof typeof TestSnapResultSelectorWebIDS,
+    expectedMessage: string,
+  ): Promise<void> {
+    const webElement = (await Matchers.getElementByWebID(
+      BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
+      TestSnapResultSelectorWebIDS[selector],
+    )) as IndexableWebElement;
 
-  async getSignBip44MessageResultText() {
-    const webElement = await this.getSignBip44MessageResultSpan;
-    return await (webElement as any).getText();
-  }
-
-  async typeSignMessage(message: any) {
-    await Gestures.typeInWebElement(this.getMessageBip44Input as any, message);
-  }
-
-  async navigateToTestSnap() {
-    await Browser.navigateToURL(TEST_SNAPS_URL);
-  }
-
-  async tapButton(elementId: any) {
-    await Gestures.scrollToWebViewPort(elementId);
-    await TestHelpers.delay(1000);
-    await Gestures.tapWebElement(elementId);
-  }
-
-  async tapEntropyDropDown() {
-    await this.tapButton(this.getEntropyDropDown);
-  }
-
-  async tapInvalidEntropySource() {
-    await this.selectEntropySource('invalid', EntropyDropDownSelectorWebIDS.SNAP44_ENTROPY_DROP_DOWN as any);
-  }
-
-  async tapValidEntropySource() {
-    await this.selectEntropySource('01JYCMT5Q344VAE9XDVH98WH1W', EntropyDropDownSelectorWebIDS.SNAP44_ENTROPY_DROP_DOWN as any);
-  }
-
-  async getOptionValueByText(selectorID: any, text: string) {
-    const webview = Matchers.getWebViewByID(BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID);
-    return await webview.element(by.web.id(selectorID)).runScript((el, searchText) => {
-      if (!el?.options) return null;
-      const option = Array.from(el.options).find((opt: any) => opt.text.includes(searchText));
-      return option ? (option as any).value : null;
-    }, [text]);
-  }
-
-  async selectPrimaryEntropySource() {
-    const primaryValue = await this.getOptionValueByText(
-      EntropyDropDownSelectorWebIDS.SNAP44_ENTROPY_DROP_DOWN,
-      '(primary)'
-    );
-    if (primaryValue) {
-      await this.selectEntropySource(primaryValue, EntropyDropDownSelectorWebIDS.SNAP44_ENTROPY_DROP_DOWN);
-    } else {
-      throw new Error('Primary option not found in entropy dropdown');
+    const actualText = await webElement.getText();
+    if (!actualText.includes(expectedMessage)) {
+      throw new Error(`Text did not contain "${expectedMessage}"`);
     }
   }
 
-  async selectEntropySource(entropySource: string, selectorID: any) {
-    const webview = Matchers.getWebViewByID(BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID);
-    await webview.element(by.web.id(selectorID)).runScript(
+  async navigateToTestSnap(): Promise<void> {
+    await Browser.tapUrlInputBox();
+    await Browser.navigateToURL(TEST_SNAPS_URL);
+  }
+
+  async tapButton(
+    buttonLocator: keyof typeof TestSnapViewSelectorWebIDS,
+  ): Promise<void> {
+    const webElement = Matchers.getElementByWebID(
+      BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
+      TestSnapViewSelectorWebIDS[buttonLocator],
+    ) as any;
+    await Gestures.scrollToWebViewPort(webElement);
+    await Gestures.tapWebElement(webElement);
+  }
+
+  async getOptionValueByText(
+    webElement: IndexableWebElement,
+    text: string,
+  ): Promise<string | null> {
+    return await webElement.runScript(
+      (el, searchText) => {
+        if (!el?.options) return null;
+        const option = Array.from(el.options).find((opt: any) =>
+          opt.text.includes(searchText),
+        );
+        return option ? (option as any).value : null;
+      },
+      [text],
+    );
+  }
+
+  async selectInDropdown(
+    selector: keyof typeof EntropyDropDownSelectorWebIDS,
+    text: string,
+  ): Promise<void> {
+    const webElement = (await Matchers.getElementByWebID(
+      BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
+      EntropyDropDownSelectorWebIDS[selector],
+    )) as IndexableWebElement;
+
+    const source = await this.getOptionValueByText(webElement, text);
+
+    await webElement.runScript(
       (el, value) => {
         el.value = value;
         el.dispatchEvent(new Event('change', { bubbles: true }));
       },
-      [entropySource]
+      [source],
     );
   }
 
-  async connectToSnap() {
-    await Gestures.waitAndTap(this.getConnectSnapButton, {
-      skipVisibilityCheck: true,
-      delayBeforeTap: 2500,
+  async installSnap(
+    buttonLocator: keyof typeof TestSnapViewSelectorWebIDS,
+  ): Promise<void> {
+    await this.tapButton(buttonLocator);
+
+    await Gestures.tap(this.getConnectSnapButton, {
+      elemDescription: 'Connect Snap button',
+      waitForElementToDisappear: true,
+    });
+
+    await Gestures.tap(this.getApproveSnapPermissionsRequestButton, {
+      elemDescription: 'Approve permission for Snap button',
+      waitForElementToDisappear: true,
+    });
+
+    await Gestures.tap(this.getConnectSnapInstallOkButton, {
+      elemDescription: 'OK button',
+      waitForElementToDisappear: true,
     });
   }
 
-  async connectToSnapPermissionsRequest() {
-    await Gestures.waitAndTap(this.getConnectSnapPermissionsRequestButton, {
-      delayBeforeTap: 2500,
-    });
-  }
-
-  async approveSnapPermissionsRequest() {
-    await Gestures.waitAndTap(this.getApproveSnapPermissionsRequestButton, {
-      delayBeforeTap: 2500,
-    });
-  }
-
-  async connectToSnapInstallOk() {
-    await Gestures.waitAndTap(this.getConnectSnapInstallOkButton, {
-      delayBeforeTap: 2500,
-    });
-  }
-
-  async swipeUpSmall() {
-    await Gestures.swipe(this.container as any, 'up', 'slow', 0.2);
-  }
-
-  async tapPublicKeyBip44Button() {
-    await this.tapButton(this.getPublicKeyBip44Button);
-  }
-
-  async tapSignBip44MessageButton() {
-    await this.tapButton(this.getSignBip44MessageButton);
+  async fillMessage(
+    locator: keyof typeof TestSnapInputSelectorWebIDS,
+    message: string,
+  ) {
+    const webElement = Matchers.getElementByWebID(
+      BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
+      TestSnapInputSelectorWebIDS[locator],
+    ) as Promise<IndexableWebElement>;
+    // New gestures currently don't support web elements
+    await LegacyGestures.typeInWebElement(webElement, message);
   }
 
   async approveSignRequest() {
-    await Gestures.waitAndTap(this.getApproveSignRequestButton);
+    await Gestures.tap(this.getApproveSignRequestButton);
   }
 
-  async connectToBip44Snap() {
-    await this.tapButton(this.getConnectBip44Button);
+  async approveNativeConfirmation() {
+    await Gestures.tap(this.confirmSignatureButton);
+  }
+
+  async waitForWebSocketUpdate(state: {
+    open: boolean;
+    origin: string | null;
+    blockNumber: string | null;
+  }): Promise<void> {
+    const resultElement = (await Matchers.getElementByWebID(
+      BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
+      TestSnapResultSelectorWebIDS.networkAccessResultSpan,
+    )) as IndexableWebElement;
+
+    await Utilities.waitUntil(
+      async () => {
+        try {
+          await this.tapButton('getWebSocketState');
+
+          // eslint-disable-next-line no-restricted-syntax
+          await TestHelpers.delay(250);
+
+          const text = await resultElement.getText();
+
+          const { open, origin, blockNumber } = JSON.parse(text);
+
+          const blockNumberMatch =
+            typeof state.blockNumber === 'string'
+              ? typeof blockNumber === state.blockNumber
+              : blockNumber === state.blockNumber;
+
+          return (
+            open === state.open && origin === state.origin && blockNumberMatch
+          );
+        } catch (error) {
+          return false;
+        }
+      },
+      { timeout: 10000, interval: 1000 },
+    );
   }
 }
 
