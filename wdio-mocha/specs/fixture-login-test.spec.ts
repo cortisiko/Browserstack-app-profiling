@@ -26,15 +26,9 @@ describe.skip("Fixture Server Login Test", () => {
     
     const isBrowserStackCI = process.env.BROWSERSTACK_CI === 'true';
     
-    if (!isBrowserStackCI) {
       console.log("🔄 Starting fixture server (not on BrowserStack CI)");
       await startFixtureServer(fixtureServer);
       await loadFixture(fixtureServer, { fixture: state });
-    } else {
-      console.log("✅ Using existing fixture server from CI");
-      // On BrowserStack, we need to load fixture data directly without HTTP verification
-      fixtureServer.loadJsonState(state);
-    }
 
     // After loading fixture state, ensure BrowserStack Local tunnel can access it
     console.log("🔄 Ensuring BrowserStack Local tunnel can access loaded fixture state...");
