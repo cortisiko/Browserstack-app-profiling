@@ -64,4 +64,4 @@ describe("Fixture Server Login Test", () => {
       throw new Error("Wallet container should be displayed");
     }
   });
-});  
+});
