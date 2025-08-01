@@ -68,7 +68,7 @@ jobs:
           project-name: ${{ github.repository }}
       
       - name: Setup BrowserStack Local
-        uses: browserstack/github-actions/setup-local@master
+        uses: browserstack/github-actions/setup-local@4478e16186f38e5be07721931642e65a028713c3
         with:
           local-testing: start
           local-identifier: ${{ github.run_id }}
