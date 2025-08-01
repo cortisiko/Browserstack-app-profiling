@@ -232,7 +232,9 @@ export const startFixtureServer = async (fixtureServer: FixtureServer) => {
 
   try {
     await fixtureServer.start();
-    logger.debug('The fixture server is started');
+    const fixtureServerPort = getFixturesServerPort();
+    logger.debug(`The fixture server is started on port ${fixtureServerPort}`);
+    logger.debug(`Fixture server URL: http://localhost:${fixtureServerPort}/state.json`);
   } catch (err) {
     logger.error('Fixture server error:', err);
   }

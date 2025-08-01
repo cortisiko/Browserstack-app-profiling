@@ -49,6 +49,7 @@
     "@viem/anvil": "^0.0.10",
     "detox": "^20.39.0",
     "mockttp": "^4.0.1",
+    "uiautomator2": "^1.0.2",
     "viem": "^2.31.4",
     "webdriverio": "^9.16.2"
   },
