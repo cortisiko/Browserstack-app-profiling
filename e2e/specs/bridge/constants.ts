@@ -1,3 +1,5 @@
+import { mockEvents } from '../../api-mocking/mock-config/mock-events';
+
 export const localNodeOptions = {
   hardfork: 'london',
   mnemonic:
@@ -85,7 +87,6 @@ export const GET_TOKENS_BASE_RESPONSE = [
   },
 ];
 
-
 export const testSpecificMock = {
   GET: [
     {
@@ -99,4 +100,5 @@ export const testSpecificMock = {
       responseCode: 200,
     },
   ],
+  POST: [mockEvents.POST.segmentTrack],
 };

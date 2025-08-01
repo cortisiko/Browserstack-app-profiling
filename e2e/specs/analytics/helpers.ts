@@ -1,4 +1,4 @@
-import { MockttpServer, ServerMockedEndpoint } from 'mockttp';
+import { MockedEndpoint, Mockttp, MockttpServer } from 'mockttp';
 import { E2E_METAMETRICS_TRACK_URL } from '../../../app/util/test/utils';
 
 export interface EventPayload {
@@ -8,21 +8,36 @@ export interface EventPayload {
 
 /**
  * Retrieves payloads of requests matching specified metametrics events.
- * @param {MockttpServer} mockServer - The mock server instance.
+ * @param {MockttpServer|Mockttp} mockServer - The mock server instance.
  * @param {Array<string>} [events] - Event names to filter payloads. If not provided, all events are returned. i.e. ['event1', 'event2']
  * @returns {Promise<Array<EventPayload>>} Filtered request payloads.
  */
 export const getEventsPayloads = async (
-  mockServer: MockttpServer,
+  mockServer: MockttpServer | Mockttp,
   events: string[] = [],
+  timeout = 10000,
 ): Promise<EventPayload[]> => {
-  const waitForPendingEndpoints = async (timeout = 30000): Promise<ServerMockedEndpoint[]> => {
+  const waitForPendingEndpoints = async (): Promise<MockedEndpoint[]> => {
     const startTime = Date.now();
 
-    const checkPendingEndpoints = async (): Promise<ServerMockedEndpoint[]> => {
+    const checkPendingEndpoints = async (): Promise<MockedEndpoint[]> => {
       const mockedEndpoints = await mockServer.getMockedEndpoints();
+
+      // Filter out infrastructure endpoints that are always pending
+      // Only include endpoints that have received requests (analytics endpoints)
+      const endpointChecks = await Promise.all(
+        mockedEndpoints.map(async (endpoint) => {
+          const seenRequests = await endpoint.getSeenRequests();
+          return { endpoint, hasRequests: seenRequests.length > 0 };
+        }),
+      );
+
+      const analyticsEndpoints = endpointChecks
+        .filter(({ hasRequests }) => hasRequests)
+        .map(({ endpoint }) => endpoint);
+
       const pendingEndpoints = await Promise.all(
-        mockedEndpoints.map((endpoint) => endpoint.isPending()),
+        analyticsEndpoints.map((endpoint) => endpoint.isPending()),
       );
 
       if (pendingEndpoints.some((isPending) => isPending)) {
@@ -32,15 +47,15 @@ export const getEventsPayloads = async (
           console.warn(
             'Some of the requests set up in the mock server were not completed.',
           );
-          return mockedEndpoints;
+          return analyticsEndpoints;
         }
         // eslint-disable-next-line no-console
         console.log('Waiting for pending endpoints...');
-        await new Promise((resolve) => setTimeout(resolve, 2500));
+        await new Promise((resolve) => setTimeout(resolve, timeout / 4));
         return checkPendingEndpoints();
       }
 
-      return mockedEndpoints;
+      return analyticsEndpoints;
     };
 
     return checkPendingEndpoints();
@@ -80,7 +95,8 @@ export const getEventsPayloads = async (
 export const findEvent = (
   payloads: EventPayload[],
   eventName: string,
-): EventPayload | undefined => payloads.find((payload) => payload.event === eventName);
+): EventPayload | undefined =>
+  payloads.find((payload) => payload.event === eventName);
 
 /**
  * Filters event objects in the payloads array matching the given event name.
@@ -93,12 +109,14 @@ export const filterEvents = (
   eventName: string,
 ): EventPayload[] => payloads.filter((payload) => payload.event === eventName);
 
-
 export const onboardingEvents = {
   ANALYTICS_PREFERENCE_SELECTED: 'Analytics Preference Selected',
   WELCOME_MESSAGE_VIEWED: 'Welcome Message Viewed',
   WELCOME_SCREEN_ENGAGEMENT: 'Welcome Screen Engagement',
+  ONBOARDING_TOUR_STARTED: 'Onboarding Tour Started',
   ONBOARDING_STARTED: 'Onboarding Started',
+  ONBOARDING_TOUR_STEP_COMPLETED: 'Onboarding Tour Step Completed',
+  ONBOARDING_TOUR_STEP_REVISITED: 'Onboarding Tour Step Revisited',
   WALLET_IMPORTED: 'Wallet Imported',
   WALLET_SETUP_STARTED: 'Wallet Setup Started',
   WALLET_IMPORT_STARTED: 'Wallet Import Started',

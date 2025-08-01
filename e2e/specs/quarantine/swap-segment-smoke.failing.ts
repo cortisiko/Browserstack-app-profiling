@@ -1,38 +1,39 @@
 import { ethers } from 'ethers';
-import { loginToApp } from '../../viewHelper.js';
+import { loginToApp } from '../../viewHelper';
 import QuoteView from '../../pages/swaps/QuoteView.ts';
-import TabBarComponent from '../../pages/wallet/TabBarComponent.js';
-import WalletView from '../../pages/wallet/WalletView.js';
-import WalletActionsBottomSheet from '../../pages/wallet/WalletActionsBottomSheet.js';
-import FixtureBuilder from '../../fixtures/fixture-builder.js';
+import TabBarComponent from '../../pages/wallet/TabBarComponent';
+import WalletView from '../../pages/wallet/WalletView';
+import WalletActionsBottomSheet from '../../pages/wallet/WalletActionsBottomSheet';
+import FixtureBuilder from '../../framework/fixtures/FixtureBuilder';
 import Tenderly from '../../tenderly.js';
 import {
   loadFixture,
   startFixtureServer,
   stopFixtureServer,
-} from '../../fixtures/fixture-helper.js';
+} from '../../framework/fixtures/FixtureHelper';
 import { CustomNetworks } from '../../resources/networks.e2e.js';
 import TestHelpers from '../../helpers.js';
-import FixtureServer from '../../fixtures/fixture-server.js';
-import { getFixturesServerPort } from '../../fixtures/utils.js';
-import { SmokeTrade } from '../../tags.js';
-import Assertions from '../../utils/Assertions.js';
+import FixtureServer from '../../framework/fixtures/FixtureServer';
+import { getFixturesServerPort } from '../../framework/fixtures/FixtureUtils';
+import { SmokeTrade } from '../../tags';
+import Assertions from '../../framework/Assertions';
 import { mockEvents } from '../../api-mocking/mock-config/mock-events.js';
 import { getEventsPayloads } from '../analytics/helpers.ts';
 import {
   startMockServer,
   stopMockServer,
 } from '../../api-mocking/mock-server.js';
-import SoftAssert from '../../utils/SoftAssert.ts';
-import { prepareSwapsTestEnvironment } from '../swaps/helpers/prepareSwapsTestEnvironment.ts';
-import SwapView from '../../pages/swaps/SwapView.ts';
-import QuotesModal from '../../pages/swaps/QuoteModal.ts';
+import SoftAssert from '../../utils/SoftAssert';
+import { prepareSwapsTestEnvironment } from '../swaps/helpers/prepareSwapsTestEnvironment';
+import SwapView from '../../pages/swaps/SwapView';
+import QuotesModal from '../../pages/swaps/QuoteModal';
 import type { MockttpServer } from 'mockttp';
 
 const fixtureServer = new FixtureServer();
 
 let mockServer: MockttpServer;
 
+// This test was migrated to the new framework but should be reworked to use withFixtures properly
 describe(SmokeTrade('Swaps - Metametrics'), () => {
   const wallet = ethers.Wallet.createRandom();
 
@@ -59,11 +60,10 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
       permissions: { notifications: 'YES' },
       launchArgs: {
         fixtureServerPort: `${getFixturesServerPort()}`,
-        sendMetaMetricsinE2E: true,
       },
     });
     await loginToApp();
-    await prepareSwapsTestEnvironment(wallet);
+    await prepareSwapsTestEnvironment();
   });
 
   afterAll(async () => {
@@ -80,7 +80,7 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
     await TabBarComponent.tapActions();
     await WalletActionsBottomSheet.tapSwapButton();
 
-    await Assertions.checkIfVisible(QuoteView.getQuotes);
+    await Assertions.expectElementToBeVisible(QuoteView.getQuotes);
 
     await QuoteView.tapOnSelectDestToken();
     await QuoteView.tapSearchToken();
@@ -94,7 +94,7 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
     await TestHelpers.delay(1000);
     await QuoteView.tapOnCancelButton();
     await device.enableSynchronization();
-    await Assertions.checkIfVisible(WalletView.container);
+    await Assertions.expectElementToBeVisible(WalletView.container);
   });
 
   it('should start a swap and open all available quotes to test the event', async () => {
@@ -102,7 +102,7 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
     await TabBarComponent.tapActions();
     await WalletActionsBottomSheet.tapSwapButton();
 
-    await Assertions.checkIfVisible(QuoteView.getQuotes);
+    await Assertions.expectElementToBeVisible(QuoteView.getQuotes);
     await QuoteView.tapOnSelectDestToken();
     await QuoteView.tapSearchToken();
     await QuoteView.typeSearchToken('DAI');
@@ -110,13 +110,13 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
     await QuoteView.selectToken('DAI');
     await QuoteView.enterSwapAmount('0.01');
     await QuoteView.tapOnGetQuotes();
-    await Assertions.checkIfVisible(SwapView.quoteSummary);
+    await Assertions.expectElementToBeVisible(SwapView.quoteSummary);
     await SwapView.tapIUnderstandPriceWarning();
     await device.disableSynchronization();
     await SwapView.tapViewDetailsAllQuotes();
-    await Assertions.checkIfVisible(QuotesModal.header);
+    await Assertions.expectElementToBeVisible(QuotesModal.header);
     await QuotesModal.close();
-    await Assertions.checkIfNotVisible(QuotesModal.header);
+    await Assertions.expectElementToNotBeVisible(QuotesModal.header);
     await device.enableSynchronization();
   });
 
@@ -143,7 +143,8 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
     ) as SegmentEvent;
 
     await softAssert.checkAndCollect(
-      async () => Assertions.checkIfObjectContains(
+      async () =>
+        Assertions.checkIfObjectContains(
           allAvailableQuotesOpenedEvent.properties,
           {
             action: 'Quote',
@@ -162,7 +163,7 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
 
     await softAssert.checkAndCollect(
       () =>
-        Assertions.checkIfValueIsPresent(
+        Assertions.checkIfValueIsDefined(
           allAvailableQuotesOpenedEvent.properties.response_time,
         ),
       'All Available Quotes Opened: Check response_time',
@@ -170,7 +171,7 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
 
     await softAssert.checkAndCollect(
       () =>
-        Assertions.checkIfValueIsPresent(
+        Assertions.checkIfValueIsDefined(
           allAvailableQuotesOpenedEvent.properties.best_quote_source,
         ),
       'All Available Quotes Opened: Check best_quote_source',
@@ -178,7 +179,7 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
 
     await softAssert.checkAndCollect(
       () =>
-        Assertions.checkIfValueIsPresent(
+        Assertions.checkIfValueIsDefined(
           allAvailableQuotesOpenedEvent.properties.network_fees_USD,
         ),
       'All Available Quotes Opened: Check network_fees_USD',
@@ -186,7 +187,7 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
 
     await softAssert.checkAndCollect(
       () =>
-        Assertions.checkIfValueIsPresent(
+        Assertions.checkIfValueIsDefined(
           allAvailableQuotesOpenedEvent.properties.network_fees_ETH,
         ),
       'All Available Quotes Opened: Check network_fees_ETH',
@@ -194,7 +195,7 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
 
     await softAssert.checkAndCollect(
       () =>
-        Assertions.checkIfValueIsPresent(
+        Assertions.checkIfValueIsDefined(
           allAvailableQuotesOpenedEvent.properties.available_quotes,
         ),
       'All Available Quotes Opened: Check available_quotes',
@@ -202,7 +203,7 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
 
     await softAssert.checkAndCollect(
       () =>
-        Assertions.checkIfValueIsPresent(
+        Assertions.checkIfValueIsDefined(
           allAvailableQuotesOpenedEvent.properties.token_to_amount,
         ),
       'All Available Quotes Opened: Check token_to_amount',
@@ -213,7 +214,8 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
     ) as SegmentEvent;
 
     await softAssert.checkAndCollect(
-      async () => Assertions.checkIfObjectContains(
+      async () =>
+        Assertions.checkIfObjectContains(
           quotesRequestCancelledEvent.properties,
           {
             action: 'Quote',
@@ -231,7 +233,7 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
 
     await softAssert.checkAndCollect(
       () =>
-        Assertions.checkIfValueIsPresent(
+        Assertions.checkIfValueIsDefined(
           quotesRequestCancelledEvent.properties.responseTime,
         ),
       'Quotes Request Cancelled: Check responseTime',
@@ -240,8 +242,6 @@ describe(SmokeTrade('Swaps - Metametrics'), () => {
     softAssert.throwIfErrors();
   });
 });
-
-
 
 // TODO: move this to a shared file when migrating other tests to TypeScript
 interface SegmentEvent {
