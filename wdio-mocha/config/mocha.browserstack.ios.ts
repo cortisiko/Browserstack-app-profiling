@@ -12,7 +12,8 @@ const defaultCapabilities = [
         'appium:deviceName': process.env.BROWSERSTACK_DEVICE || 'iPhone 15 Pro Max',
         'appium:os_version': process.env.BROWSERSTACK_OS_VERSION || '17.0',
         'appium:automationName': 'XCUITest',
-        'appium:app': 'bs://7a42bf53dcdf1e51761f4c14a541500656b910bb',
+        'appium:app': process.env.BROWSERSTACK_ANDROID_APP_URL,
+        // 'appium:app': 'bs://7a42bf53dcdf1e51761f4c14a541500656b910bb',
         'appium:settings[snapshotMaxDepth]': 62,
         'appium:settings[customSnapshotTimeout]': 50000,
         'bstack:options': {
