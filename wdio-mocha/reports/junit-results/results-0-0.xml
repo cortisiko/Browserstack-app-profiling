@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="1" failures="1" errors="0" skipped="0">
+  <testsuite tests="1" failures="1" errors="0" skipped="0">
+    <testcase classname="" name="">
+      <failure message="WebDriverError: [BROWSERSTACK_LOCAL_CONNECTION_FAILED] Issues with the local testing configurations have been observed. Refer to this troubleshooting guide to identify and resolve your BrowserStack Local related issue: https://www.browserstack.com/docs/app-automate/appium/troubleshooting/local-issues when running &quot;https://hub-cloud.browserstack.com/wd/hub/session&quot; with method &quot;POST&quot; and args &quot;{&quot;capabilities&quot;:{&quot;alwaysMatch&quot;:{&quot;platformName&quot;:&quot;iOS&quot;,&quot;appium:build&quot;:&quot;iOS App Profiling Tests&quot;,&quot;appium:deviceName&quot;:&quot;iPhone 15 Pro Max&quot;,&quot;appium:os_version&quot;:&quot;17.0&quot;,&quot;appium:automationName&quot;:&quot;XCUITest&quot;,&quot;appium:app&quot;:&quot;bs://7a42bf53dcdf1e51761f4c14a541500656b910bb&quot;,&quot;appium:settings[snapshotMaxDepth]&quot;:62,&quot;appium:settings[customSnapshotTimeout]&quot;:50000,&quot;bstack:options&quot;:{&quot;appProfiling&quot;:true,&quot;local&quot;:true,&quot;interactiveDebugging&quot;:true,&quot;networkLogs&quot;:true,&quot;networkLogsOptions&quot;:{&quot;captureContent&quot;:true}}},&quot;firstMatch&quot;:[{}]}}&quot;"/>
+    </testcase>
+  </testsuite>
+</testsuites>

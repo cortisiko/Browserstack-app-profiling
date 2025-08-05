@@ -24,7 +24,9 @@
     "test:wdio:android": "yarn wdio ./wdio/config/android.config.debug.ts",
     "test:wdio:android:browserstack": "yarn wdio ./wdio/config/android.config.browserstack.ts",
     "test:wdio:mocha": "yarn wdio ./wdio-mocha/config/mocha.local.capabilities.ts",
-    "test:wdio:mocha:browserstack": "yarn wdio ./wdio-mocha/config/mocha.browserstack.capabilities.ts"
+    "test:wdio:android-mocha:browserstack": "yarn wdio ./wdio-mocha/config/mocha.browserstack.capabilities.ts",
+    "test:wdio:ios-mocha:browserstack": "yarn wdio ./wdio-mocha/config/mocha.browserstack.ios.ts"
+
   },
   "packageManager": "yarn@1.22.22",
   "foundryup": {
