@@ -10,6 +10,43 @@ import {
   DEFAULT_DAPP_SERVER_PORT,
 } from '../Constants';
 
+/**
+ * Determines if the current environment is running on BrowserStack.
+ *
+ * This function provides consistent BrowserStack detection used by both
+ * getServerPort() and getLocalHost() to ensure matching host/port configurations.
+ *
+ * @returns True when running on BrowserStack with local tunnel enabled
+ */
+function isBrowserStackEnvironment(): boolean {
+  return Boolean(process.env.BROWSERSTACK_LOCAL);
+}
+
+/**
+ * @description
+ * When running tests on BrowserStack, local services need to be accessed through
+ * BrowserStack's local tunnel hostname. For local development,
+ * standard localhost is used.
+ *
+ * @returns The hostname to use for connecting to local services:
+ * - 'bs-local.com' when running on BrowserStack (detected via BROWSERSTACK_LOCAL env var)
+ * - 'localhost' for local development and other environments
+ *
+ * @example
+ * ```typescript
+ * const fixtureServerHost = getLocalHost();
+ * const serverUrl = `http://${fixtureServerHost}:${port}`;
+ * // Returns: "http://bs-local.com:12345" on BrowserStack
+ * // Returns: "http://localhost:12345" locally
+ * ```
+ */
+export function getLocalHost() {
+  if (isBrowserStackEnvironment()) {
+    return 'bs-local.com';
+  }
+  return 'localhost';
+}
+
 function transformToValidPort(defaultPort: number, pid: number) {
   // Improve uniqueness by using a simple transformation
   const transformedPort = (pid % 100000) + defaultPort;
@@ -20,8 +57,9 @@ function transformToValidPort(defaultPort: number, pid: number) {
 
 function getServerPort(defaultPort: number) {
   if (process.env.CI) {
-    if(process.env.BROWSERSTACK_LOCAL){
-      return defaultPort
+    if (isBrowserStackEnvironment()) {
+      // if running on browserstack, do not use dynamic ports
+      return defaultPort;
     }
     return transformToValidPort(defaultPort, process.pid);
   }
