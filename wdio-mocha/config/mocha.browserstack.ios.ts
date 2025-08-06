@@ -16,6 +16,7 @@ const defaultCapabilities = [
         // 'appium:app': 'bs://7a42bf53dcdf1e51761f4c14a541500656b910bb',
         'appium:settings[snapshotMaxDepth]': 62,
         'appium:settings[customSnapshotTimeout]': 50000,
+        'appium:autoLaunch': false,
         'bstack:options': {
           appProfiling: true,
           local: true,
