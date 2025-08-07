@@ -166,7 +166,7 @@ jobs:
         uses: browserstack/github-actions/setup-local@4478e16186f38e5be07721931642e65a028713c3
         with:
           local-testing: start
-          local-identifier: ${{ github.run_id }}
+          local-identifier: ${{ github.run_number }}1
           local-args: --force-local --verbose
       
       - name: Wait for BrowserStack Local
@@ -178,7 +178,6 @@ jobs:
       - name: Run Android Performance Tests
         env:
           BROWSERSTACK_LOCAL: true
-          BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
           BROWSERSTACK_CI: true
         run: |
           echo "Running Android tests on device: ${{ env.BROWSERSTACK_DEVICE }}"
@@ -241,7 +240,7 @@ jobs:
         uses: browserstack/github-actions/setup-local@4478e16186f38e5be07721931642e65a028713c3
         with:
           local-testing: start
-          local-identifier: ${{ github.run_id }}
+          local-identifier: ${{ github.run_number }}2
           local-args: --force-local --verbose
       
       - name: Wait for BrowserStack Local
@@ -253,7 +252,6 @@ jobs:
       - name: Run iOS Performance Tests
         env:
           BROWSERSTACK_LOCAL: true
-          BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}
           BROWSERSTACK_CI: true
         run: |
           echo "Running iOS tests on device: ${{ env.BROWSERSTACK_DEVICE }}"

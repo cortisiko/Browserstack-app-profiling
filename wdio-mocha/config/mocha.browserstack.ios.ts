@@ -21,7 +21,7 @@ const defaultCapabilities = [
         'bstack:options': {
           appProfiling: true,
           "local": process.env.BROWSERSTACK_LOCAL || false,
-          localIdentifier: process.env.BROWSERSTACK_LOCAL_IDENTIFIER || process.env.GITHUB_RUN_ID,
+          localIdentifier: process.env.GITHUB_RUN_NUMBER + '2',
           interactiveDebugging: true,
           networkLogs: true,
           networkLogsOptions: {
