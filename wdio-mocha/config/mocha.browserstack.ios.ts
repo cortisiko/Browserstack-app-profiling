@@ -20,7 +20,7 @@ const defaultCapabilities = [
         'appium:autoLaunch': false,
         'bstack:options': {
           appProfiling: true,
-          local: true,
+          "local": process.env.BROWSERSTACK_LOCAL || false,
           localIdentifier: process.env.GITHUB_RUN_ID,
           interactiveDebugging: true,
           networkLogs: true,
