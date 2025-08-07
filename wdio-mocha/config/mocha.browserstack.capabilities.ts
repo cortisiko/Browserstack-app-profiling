@@ -5,6 +5,12 @@ import { config } from './wdio.mocha.conf.js';
 config.user = process.env.BROWSERSTACK_USERNAME;
 config.key = process.env.BROWSERSTACK_ACCESS_KEY;
 
+// Debug environment variables
+console.log('Android BrowserStack Config Debug:');
+console.log('BROWSERSTACK_ANDROID_APP_URL:', process.env.BROWSERSTACK_ANDROID_APP_URL);
+console.log('BROWSERSTACK_DEVICE:', process.env.BROWSERSTACK_DEVICE);
+console.log('BROWSERSTACK_OS_VERSION:', process.env.BROWSERSTACK_OS_VERSION);
+
 const defaultCapabilities = [
   {
     platformName: 'Android',

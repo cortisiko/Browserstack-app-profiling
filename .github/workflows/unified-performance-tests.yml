@@ -1,0 +1,297 @@
+name: Unified Performance Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      info:
+        description: 'For available devices and OS versions, visit: https://www.browserstack.com/list-of-browsers-and-platforms/app_automate'
+        required: false
+        default: 'Info: Visit the link above for device and OS options'
+        type: string
+      platform:
+        description: 'Platform to test (android, ios, or both)'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - both
+          - android
+          - ios
+      android_device:
+        description: 'Android device (e.g., Xiaomi Redmi Note 11)'
+        required: false
+        default: 'Xiaomi Redmi Note 11'
+        type: string
+      android_os_version:
+        description: 'Android OS Version (e.g., 11.0)'
+        required: false
+        default: '11.0'
+        type: string
+      android_app_url:
+        description: 'BrowserStack Android app URL'
+        required: false
+        type: string
+      ios_device:
+        description: 'iOS device (e.g., iPhone 15 Pro Max)'
+        required: false
+        default: 'iPhone 15 Pro Max'
+        type: string
+      ios_os_version:
+        description: 'iOS Version (e.g., 17.0)'
+        required: false
+        default: '17.0'
+        type: string
+      ios_app_url:
+        description: 'BrowserStack iOS app URL'
+        required: false
+        type: string
+  
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+env:
+  BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+  BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+  MM_TEST_ACCOUNT_SRP: ${{ secrets.MM_TEST_ACCOUNT_SRP }}
+
+jobs:
+  determine-platforms:
+    runs-on: ubuntu-latest
+    outputs:
+      run-android: ${{ steps.set-platforms.outputs.run-android }}
+      run-ios: ${{ steps.set-platforms.outputs.run-ios }}
+      platforms-text: ${{ steps.set-platforms.outputs.platforms-text }}
+    steps:
+      - name: Determine platforms to test
+        id: set-platforms
+        run: |
+          RUN_ANDROID="false"
+          RUN_IOS="false"
+          
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            PLATFORM="${{ github.event.inputs.platform }}"
+            case $PLATFORM in
+              "both")
+                RUN_ANDROID="true"
+                RUN_IOS="true"
+                PLATFORMS_TEXT="Android and iOS"
+                ;;
+              "android")
+                RUN_ANDROID="true"
+                PLATFORMS_TEXT="Android"
+                ;;
+              "ios")
+                RUN_IOS="true"
+                PLATFORMS_TEXT="iOS"
+                ;;
+            esac
+          elif [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # Check for labels
+            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'test-android') }}" == "true" ]]; then
+              RUN_ANDROID="true"
+            fi
+            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'test-ios') }}" == "true" ]]; then
+              RUN_IOS="true"
+            fi
+            
+            if [[ "$RUN_ANDROID" == "true" ]] && [[ "$RUN_IOS" == "true" ]]; then
+              PLATFORMS_TEXT="Android and iOS"
+            elif [[ "$RUN_ANDROID" == "true" ]]; then
+              PLATFORMS_TEXT="Android"
+            elif [[ "$RUN_IOS" == "true" ]]; then
+              PLATFORMS_TEXT="iOS"
+            else
+              PLATFORMS_TEXT="none"
+            fi
+          fi
+          
+          echo "run-android=$RUN_ANDROID" >> $GITHUB_OUTPUT
+          echo "run-ios=$RUN_IOS" >> $GITHUB_OUTPUT
+          echo "platforms-text=$PLATFORMS_TEXT" >> $GITHUB_OUTPUT
+          
+          echo "Will run Android tests: $RUN_ANDROID"
+          echo "Will run iOS tests: $RUN_IOS"
+          echo "Platforms text: $PLATFORMS_TEXT"
+
+  android-tests:
+    needs: determine-platforms
+    if: ${{ needs.determine-platforms.outputs.run-android == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      BROWSERSTACK_DEVICE: ${{ github.event.inputs.android_device || 'Xiaomi Redmi Note 11' }}
+      BROWSERSTACK_OS_VERSION: ${{ github.event.inputs.android_os_version || '11.0' }}
+      BROWSERSTACK_ANDROID_APP_URL: ${{ github.event.inputs.android_app_url }}
+      BROWSERSTACK_LOCAL: true
+      BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}-android
+      BROWSERSTACK_CI: true
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.1'
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Validate Android app URL
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          if [[ -z "${{ env.BROWSERSTACK_ANDROID_APP_URL }}" ]]; then
+            echo "Error: BrowserStack Android app URL is required for manual runs"
+            exit 1
+          fi
+
+      - name: BrowserStack Env Setup
+        uses: browserstack/github-actions/setup-env@4478e16186f38e5be07721931642e65a028713c3
+        with:
+          username: ${{ secrets.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          build-name: ${{ github.repository }}-android-${{ env.BROWSERSTACK_DEVICE }}-run-${{ github.run_number }}
+          project-name: ${{ github.repository }}
+      
+      - name: Setup BrowserStack Local
+        uses: browserstack/github-actions/setup-local@4478e16186f38e5be07721931642e65a028713c3
+        with:
+          local-testing: start
+          local-identifier: ${{ github.run_id }}-android
+          local-args: --force-local --verbose
+      
+      - name: Wait for BrowserStack Local
+        run: |
+          echo "Waiting for BrowserStack Local to be ready..."
+          sleep 30
+          echo "BrowserStack Local should be ready now"
+      
+      - name: Run Android Performance Tests
+        run: |
+          echo "Running Android tests on device: ${{ env.BROWSERSTACK_DEVICE }}"
+          echo "Device: ${{ env.BROWSERSTACK_DEVICE }}"
+          echo "OS Version: ${{ env.BROWSERSTACK_OS_VERSION }}"
+          echo "App URL: ${{ env.BROWSERSTACK_ANDROID_APP_URL }}"
+          echo "Environment variables:"
+          echo "BROWSERSTACK_ANDROID_APP_URL: $BROWSERSTACK_ANDROID_APP_URL"
+          echo "BROWSERSTACK_DEVICE: $BROWSERSTACK_DEVICE"
+          echo "BROWSERSTACK_OS_VERSION: $BROWSERSTACK_OS_VERSION"
+          yarn test:wdio:android-mocha:browserstack
+
+      - name: 'BrowserStackLocal Stop'
+        if: always()
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: stop
+
+  ios-tests:
+    needs: determine-platforms
+    if: ${{ needs.determine-platforms.outputs.run-ios == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      BROWSERSTACK_DEVICE: ${{ github.event.inputs.ios_device || 'iPhone 15 Pro Max' }}
+      BROWSERSTACK_OS_VERSION: ${{ github.event.inputs.ios_os_version || '17.0' }}
+      BROWSERSTACK_IOS_APP_URL: ${{ github.event.inputs.ios_app_url }}
+      BROWSERSTACK_LOCAL: true
+      BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}-ios
+      BROWSERSTACK_CI: true
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.1'
+          cache: 'yarn'
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Validate iOS app URL
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          if [[ -z "${{ env.BROWSERSTACK_IOS_APP_URL }}" ]]; then
+            echo "Error: BrowserStack iOS app URL is required for manual runs"
+            exit 1
+          fi
+
+      - name: BrowserStack Env Setup
+        uses: browserstack/github-actions/setup-env@4478e16186f38e5be07721931642e65a028713c3
+        with:
+          username: ${{ secrets.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          build-name: ${{ github.repository }}-ios-${{ env.BROWSERSTACK_DEVICE }}-run-${{ github.run_number }}
+          project-name: ${{ github.repository }}
+      
+      - name: Setup BrowserStack Local
+        uses: browserstack/github-actions/setup-local@4478e16186f38e5be07721931642e65a028713c3
+        with:
+          local-testing: start
+          local-identifier: ${{ github.run_id }}-ios
+          local-args: --force-local --verbose
+      
+      - name: Wait for BrowserStack Local
+        run: |
+          echo "Waiting for BrowserStack Local to be ready..."
+          sleep 30
+          echo "BrowserStack Local should be ready now"
+      
+      - name: Run iOS Performance Tests
+        run: |
+          echo "Running iOS tests on device: ${{ env.BROWSERSTACK_DEVICE }}"
+          echo "Device: ${{ env.BROWSERSTACK_DEVICE }}"
+          echo "OS Version: ${{ env.BROWSERSTACK_OS_VERSION }}"
+          echo "App URL: ${{ env.BROWSERSTACK_IOS_APP_URL }}"
+          echo "Environment variables:"
+          echo "BROWSERSTACK_IOS_APP_URL: $BROWSERSTACK_IOS_APP_URL"
+          echo "BROWSERSTACK_DEVICE: $BROWSERSTACK_DEVICE"
+          echo "BROWSERSTACK_OS_VERSION: $BROWSERSTACK_OS_VERSION"
+          yarn test:wdio:ios-mocha:browserstack
+
+      - name: 'BrowserStackLocal Stop'
+        if: always()
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: stop
+
+  report-results:
+    needs: [determine-platforms, android-tests, ios-tests]
+    if: always() && (needs.determine-platforms.outputs.run-android == 'true' || needs.determine-platforms.outputs.run-ios == 'true')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check test results
+        run: |
+          ANDROID_RESULT="${{ needs.android-tests.result }}"
+          IOS_RESULT="${{ needs.ios-tests.result }}"
+          RUN_ANDROID="${{ needs.determine-platforms.outputs.run-android }}"
+          RUN_IOS="${{ needs.determine-platforms.outputs.run-ios }}"
+          
+          echo "Android tests ran: $RUN_ANDROID, result: $ANDROID_RESULT"
+          echo "iOS tests ran: $RUN_IOS, result: $IOS_RESULT"
+          
+          OVERALL_SUCCESS="true"
+          
+          if [[ "$RUN_ANDROID" == "true" ]] && [[ "$ANDROID_RESULT" != "success" ]]; then
+            echo "❌ Android tests failed"
+            OVERALL_SUCCESS="false"
+          fi
+          
+          if [[ "$RUN_IOS" == "true" ]] && [[ "$IOS_RESULT" != "success" ]]; then
+            echo "❌ iOS tests failed"
+            OVERALL_SUCCESS="false"
+          fi
+          
+          if [[ "$OVERALL_SUCCESS" == "true" ]]; then
+            echo "✅ All tests passed successfully!"
+          else
+            echo "❌ Some tests failed"
+            exit 1
+          fi
