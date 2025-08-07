@@ -1,5 +1,4 @@
 import FixtureServer from "../../e2e/framework/fixtures/FixtureServer";
-import ADB from "appium-adb";
 import Accounts from "../../wdio/helpers/Accounts";
 import LoginScreen from "../../wdio/screen-objects/LoginScreen";
 import WalletMainScreen from "../../wdio/screen-objects/WalletMainScreen";
@@ -9,6 +8,7 @@ import {
   startFixtureServer,
   stopFixtureServer,
 } from "../../e2e/framework/fixtures/FixtureHelper";
+import { launchAppWithDetection } from "../utils/appLauncher";
 
 declare const driver: any;
 
@@ -27,32 +27,8 @@ describe("Fixture Server Login Test", () => {
     await startFixtureServer(fixtureServer);
     await loadFixture(fixtureServer, { fixture: state });
 
-    // await device.terminateApp('io.metamask.MetaMask');
-    // await driver.activateApp('io.metamask.MetaMask');
-
-    const capabilities = await driver.getSession();
-    const isBrowserStack =
-      capabilities["bstack:options"] ||
-      process.argv.includes("browserstack.conf.ts");
-    const platform = capabilities.platformName;
-    console.log("isBrowserStack", isBrowserStack);
-
-    if (!isBrowserStack) {
-      if (driver.capabilities.platformName === "Android") {
-        const adb = await ADB.createADB();
-        await adb.reversePort(8545, 8545);
-        await adb.reversePort(12345, 12345);
-      }
-    } else {
-      console.log(
-        "Running on BrowserStack - skipping local ADB and app management steps"
-      );
-    }
-    if (platform === "iOS") {
-      await driver.activateApp("io.metamask.MetaMask-QA");
-    } else {
-      await driver.activateApp("io.metamask.qa");
-    }
+    // Launch the app using the utility function
+    await launchAppWithDetection();
   });
 
   after(async () => {
