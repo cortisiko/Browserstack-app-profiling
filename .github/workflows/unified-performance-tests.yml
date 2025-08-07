@@ -126,6 +126,9 @@ jobs:
       BROWSERSTACK_DEVICE: ${{ github.event.inputs.android_device || 'Xiaomi Redmi Note 11' }}
       BROWSERSTACK_OS_VERSION: ${{ github.event.inputs.android_os_version || '11.0' }}
       BROWSERSTACK_ANDROID_APP_URL: ${{ github.event.inputs.android_app_url }}
+      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      MM_TEST_ACCOUNT_SRP: ${{ secrets.MM_TEST_ACCOUNT_SRP }}
       BROWSERSTACK_LOCAL: true
       BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}-android
       BROWSERSTACK_CI: true
@@ -173,15 +176,15 @@ jobs:
           echo "BrowserStack Local should be ready now"
       
       - name: Run Android Performance Tests
+        env:
+          BROWSERSTACK_LOCAL: true
+          BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}-android
+          BROWSERSTACK_CI: true
         run: |
           echo "Running Android tests on device: ${{ env.BROWSERSTACK_DEVICE }}"
           echo "Device: ${{ env.BROWSERSTACK_DEVICE }}"
           echo "OS Version: ${{ env.BROWSERSTACK_OS_VERSION }}"
           echo "App URL: ${{ env.BROWSERSTACK_ANDROID_APP_URL }}"
-          echo "Environment variables:"
-          echo "BROWSERSTACK_ANDROID_APP_URL: $BROWSERSTACK_ANDROID_APP_URL"
-          echo "BROWSERSTACK_DEVICE: $BROWSERSTACK_DEVICE"
-          echo "BROWSERSTACK_OS_VERSION: $BROWSERSTACK_OS_VERSION"
           yarn test:wdio:android-mocha:browserstack
 
       - name: 'BrowserStackLocal Stop'
@@ -198,6 +201,9 @@ jobs:
       BROWSERSTACK_DEVICE: ${{ github.event.inputs.ios_device || 'iPhone 15 Pro Max' }}
       BROWSERSTACK_OS_VERSION: ${{ github.event.inputs.ios_os_version || '17.0' }}
       BROWSERSTACK_IOS_APP_URL: ${{ github.event.inputs.ios_app_url }}
+      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      MM_TEST_ACCOUNT_SRP: ${{ secrets.MM_TEST_ACCOUNT_SRP }}
       BROWSERSTACK_LOCAL: true
       BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}-ios
       BROWSERSTACK_CI: true
@@ -245,15 +251,15 @@ jobs:
           echo "BrowserStack Local should be ready now"
       
       - name: Run iOS Performance Tests
+        env:
+          BROWSERSTACK_LOCAL: true
+          BROWSERSTACK_LOCAL_IDENTIFIER: ${{ github.run_id }}-ios
+          BROWSERSTACK_CI: true
         run: |
           echo "Running iOS tests on device: ${{ env.BROWSERSTACK_DEVICE }}"
           echo "Device: ${{ env.BROWSERSTACK_DEVICE }}"
           echo "OS Version: ${{ env.BROWSERSTACK_OS_VERSION }}"
           echo "App URL: ${{ env.BROWSERSTACK_IOS_APP_URL }}"
-          echo "Environment variables:"
-          echo "BROWSERSTACK_IOS_APP_URL: $BROWSERSTACK_IOS_APP_URL"
-          echo "BROWSERSTACK_DEVICE: $BROWSERSTACK_DEVICE"
-          echo "BROWSERSTACK_OS_VERSION: $BROWSERSTACK_OS_VERSION"
           yarn test:wdio:ios-mocha:browserstack
 
       - name: 'BrowserStackLocal Stop'
