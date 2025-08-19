@@ -1,6 +1,8 @@
 # Dependencies
 node_modules/
 
+wdio-mocha/metamask-simulator-main-e2e.app
+
 # Environment variables
 .env
 .env.local
