@@ -514,7 +514,7 @@ jobs:
   all-status:
     name: Check All Job Statuses
     runs-on: ubuntu-latest
-    needs: [read-device-matrix, trigger-qa-builds-and-upload, android-tests, ios-tests]
+    needs: [read-device-matrix, trigger-qa-builds-and-upload, android-tests, ios-tests, gather-results]
     if: always()
     outputs:
       overall_status: ${{ steps.status-check.outputs.overall_status }}
@@ -609,7 +609,9 @@ jobs:
           fi
           
           # Create summary
-          SUMMARY="*Performance E2E Tests: $OVERALL_RESULT*\n\n"
+          SUMMARY="*Performance E2E Tests*\n\n"
+          
+          SUMMARY+="---------------\n\n"
           SUMMARY+="*Devices Tested:*\n"
           SUMMARY+="• Android:\n"
           while IFS= read -r device; do
@@ -624,9 +626,11 @@ jobs:
             fi
           done <<< "$IOS_DEVICES"
           SUMMARY+="\n"
+          SUMMARY+="---------------\n\n"
           SUMMARY+="*Test Results:*\n"
           SUMMARY+="• Android Tests: $ANDROID_DISPLAY\n"
           SUMMARY+="• iOS Tests: $IOS_DISPLAY\n\n"
+          SUMMARY+="---------------\n\n"
           SUMMARY+="*Build Info:*\n"
           SUMMARY+="• Commit Hash: \`${{ github.sha }}\`\n"
           SUMMARY+="<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Full Results>"
