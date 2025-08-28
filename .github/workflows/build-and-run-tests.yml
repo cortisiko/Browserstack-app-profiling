@@ -1,7 +1,7 @@
 name: Build Apps and Run Performance E2E Tests
 on:
   schedule:
-    - cron: '0 * * * 1-6'
+    - cron: '*/10 * * * *'
 permissions:
   contents: read
   id-token: write
