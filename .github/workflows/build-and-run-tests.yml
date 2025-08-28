@@ -28,8 +28,8 @@ jobs:
       - name: Read device matrix
         id: matrix
         run: |
-          # This step reads the device matrix from appwright/device-matrix.json
-          echo "Reading device matrix from appwright/device-matrix.json"
+          # This step reads the device matrix from wdio-mocha/device-matrix.json
+          echo "Reading device matrix from wdio-mocha/device-matrix.json"
           
           # Extract Android devices
           ANDROID_MATRIX=$(jq -r ".android_devices | map({name: .name, os_version: .os_version, category: .category}) | tojson" appwright/device-matrix.json)
