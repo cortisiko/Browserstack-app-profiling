@@ -555,7 +555,16 @@ jobs:
           # Get test results
           ANDROID_RESULT="${{ needs.android-tests.result }}"
           IOS_RESULT="${{ needs.ios-tests.result }}"
-          OVERALL_RESULT="${{ needs.gather-results.outputs.overall_status }}"
+          TRIGGER_RESULT="${{ needs.trigger-qa-builds-and-upload.result }}"
+          
+          # Determine overall result based on actual job results
+          if [ "$TRIGGER_RESULT" = "failure" ]; then
+            OVERALL_RESULT="❌ FAILED"
+          elif [ "$ANDROID_RESULT" = "failure" ] || [ "$IOS_RESULT" = "failure" ]; then
+            OVERALL_RESULT="❌ FAILED"
+          else
+            OVERALL_RESULT="✅ PASSED"
+          fi
           
           # Format results
           if [ "$ANDROID_RESULT" = "success" ]; then
@@ -574,13 +583,17 @@ jobs:
           SUMMARY="*Performance E2E Tests: $OVERALL_RESULT*\n\n"
           SUMMARY+="*Devices Tested:*\n"
           SUMMARY+="• Android:\n"
-          echo "$ANDROID_DEVICES" | while read -r device; do
-            SUMMARY+="  $device\n"
-          done
+          while IFS= read -r device; do
+            if [ -n "$device" ]; then
+              SUMMARY+="  • $device\n"
+            fi
+          done <<< "$ANDROID_DEVICES"
           SUMMARY+="• iOS:\n"
-          echo "$IOS_DEVICES" | while read -r device; do
-            SUMMARY+="  $device\n"
-          done
+          while IFS= read -r device; do
+            if [ -n "$device" ]; then
+              SUMMARY+="  • $device\n"
+            fi
+          done <<< "$IOS_DEVICES"
           SUMMARY+="\n"
           SUMMARY+="*Test Results:*\n"
           SUMMARY+="• Android Tests: $ANDROID_STATUS\n"
