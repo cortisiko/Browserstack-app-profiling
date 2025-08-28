@@ -633,6 +633,7 @@ jobs:
           SUMMARY+="---------------\n\n"
           SUMMARY+="*Build Info:*\n"
           SUMMARY+="• Commit Hash: \`${{ github.sha }}\`\n"
+          SUMMARY+="---------------\n\n"
           SUMMARY+="<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Full Results>"
           
           echo "summary<<EOF" >> "$GITHUB_OUTPUT"
