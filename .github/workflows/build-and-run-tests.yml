@@ -503,7 +503,11 @@ jobs:
       - name: Check Test Results
         id: test-results
         run: |
-          if [ "${{ needs.android-tests.result }}" == "failure" ] || [ "${{ needs.ios-tests.result }}" == "failure" ]; then
+          if [ "${{ needs.trigger-qa-builds-and-upload.result }}" == "failure" ]; then
+            echo "QA builds failed. Cannot run tests without successful builds."
+            echo "overall_status=failure" >> "$GITHUB_OUTPUT"
+            exit 1
+          elif [ "${{ needs.android-tests.result }}" == "failure" ] || [ "${{ needs.ios-tests.result }}" == "failure" ]; then
             echo "Some tests failed. Check the individual job results above."
             echo "Note: iOS 13 and iOS 11 failures are expected due to MetaMask app compatibility."
             echo "overall_status=failure" >> "$GITHUB_OUTPUT"
@@ -545,8 +549,8 @@ jobs:
           DEVICE_MATRIX=$(cat wdio-mocha/device-matrix.json)
           
           # Extract device information
-          ANDROID_DEVICES=$(echo "$DEVICE_MATRIX" | jq -r '.android_devices[] | "\(.name) (\(.os_version))"' | tr '\n' ' ' | sed 's/ $//')
-          IOS_DEVICES=$(echo "$DEVICE_MATRIX" | jq -r '.ios_devices[] | "\(.name) (\(.os_version))"' | tr '\n' ' ' | sed 's/ $//')
+          ANDROID_DEVICES=$(echo "$DEVICE_MATRIX" | jq -r '.android_devices[] | "\(.name) (\(.os_version))"')
+          IOS_DEVICES=$(echo "$DEVICE_MATRIX" | jq -r '.ios_devices[] | "\(.name) (\(.os_version))"')
           
           # Get test results
           ANDROID_RESULT="${{ needs.android-tests.result }}"
@@ -569,13 +573,20 @@ jobs:
           # Create summary
           SUMMARY="*Performance E2E Tests: $OVERALL_RESULT*\n\n"
           SUMMARY+="*Devices Tested:*\n"
-          SUMMARY+="• Android: $ANDROID_DEVICES\n"
-          SUMMARY+="• iOS: $IOS_DEVICES\n\n"
+          SUMMARY+="• Android:\n"
+          echo "$ANDROID_DEVICES" | while read -r device; do
+            SUMMARY+="  $device\n"
+          done
+          SUMMARY+="• iOS:\n"
+          echo "$IOS_DEVICES" | while read -r device; do
+            SUMMARY+="  $device\n"
+          done
+          SUMMARY+="\n"
           SUMMARY+="*Test Results:*\n"
           SUMMARY+="• Android Tests: $ANDROID_STATUS\n"
           SUMMARY+="• iOS Tests: $IOS_STATUS\n\n"
           SUMMARY+="*Build Info:*\n"
-          SUMMARY+="• Commit: ${{ github.sha }}\n"
+          SUMMARY+="• Commit Hash: \`${{ github.sha }}\`\n"
           SUMMARY+="<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Full Results>"
           
           echo "summary<<EOF" >> "$GITHUB_OUTPUT"
