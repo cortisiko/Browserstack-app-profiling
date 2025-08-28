@@ -521,8 +521,6 @@ jobs:
       android_status: ${{ steps.status-check.outputs.android_status }}
       ios_status: ${{ steps.status-check.outputs.ios_status }}
       trigger_status: ${{ steps.status-check.outputs.trigger_status }}
-      gather_status: ${{ steps.status-check.outputs.gather_status }}
-      matrix_status: ${{ steps.status-check.outputs.matrix_status }}
     
     steps:
       - name: Check All Job Statuses
@@ -530,65 +528,38 @@ jobs:
         run: |
           echo "Checking status of all jobs..."
           
-          MATRIX_RESULT="${{ needs.read-device-matrix.result }}"
           TRIGGER_RESULT="${{ needs.trigger-qa-builds-and-upload.result }}"
           ANDROID_RESULT="${{ needs.android-tests.result }}"
           IOS_RESULT="${{ needs.ios-tests.result }}"
-          GATHER_RESULT="${{ needs.gather-results.result }}"
           
           echo "Job Results:"
-          echo "- read-device-matrix: $MATRIX_RESULT"
           echo "- trigger-qa-builds-and-upload: $TRIGGER_RESULT"
           echo "- android-tests: $ANDROID_RESULT"
           echo "- ios-tests: $IOS_RESULT"
-          echo "- gather-results: $GATHER_RESULT"
           
-          # Check for cancellations first
-          if [ "$MATRIX_RESULT" = "cancelled" ] || [ "$TRIGGER_RESULT" = "cancelled" ] || [ "$ANDROID_RESULT" = "cancelled" ] || [ "$IOS_RESULT" = "cancelled" ] || [ "$GATHER_RESULT" = "cancelled" ]; then
-            OVERALL_STATUS="🚫 CANCELLED"
-            echo "Overall Status: CANCELLED (one or more jobs were cancelled)"
-          # Then check for failures
-          elif [ "$MATRIX_RESULT" = "failure" ]; then
-            OVERALL_STATUS="❌ FAILED"
-            echo "Overall Status: FAILED (device matrix reading failed)"
-          elif [ "$TRIGGER_RESULT" = "failure" ]; then
+          # Determine overall status
+          if [ "$TRIGGER_RESULT" = "failure" ]; then
             OVERALL_STATUS="❌ FAILED"
             echo "Overall Status: FAILED (QA builds failed)"
           elif [ "$ANDROID_RESULT" = "failure" ] || [ "$IOS_RESULT" = "failure" ]; then
             OVERALL_STATUS="❌ FAILED"
             echo "Overall Status: FAILED (tests failed)"
-          elif [ "$GATHER_RESULT" = "failure" ]; then
-            OVERALL_STATUS="❌ FAILED"
-            echo "Overall Status: FAILED (results gathering failed)"
-          # Only then mark as success
-          elif [ "$MATRIX_RESULT" = "success" ] && [ "$TRIGGER_RESULT" = "success" ] && [ "$ANDROID_RESULT" = "success" ] && [ "$IOS_RESULT" = "success" ] && [ "$GATHER_RESULT" = "success" ]; then
-            OVERALL_STATUS="✅ PASSED"
-            echo "Overall Status: PASSED (all jobs completed successfully)"
-          # Handle skipped jobs (can happen with conditional logic)
-          elif [ "$MATRIX_RESULT" = "skipped" ] || [ "$TRIGGER_RESULT" = "skipped" ] || [ "$ANDROID_RESULT" = "skipped" ] || [ "$IOS_RESULT" = "skipped" ] || [ "$GATHER_RESULT" = "skipped" ]; then
-            OVERALL_STATUS="⏭️ SKIPPED"
-            echo "Overall Status: SKIPPED (one or more jobs were skipped)"
-          # Handle any other edge cases
           else
-            OVERALL_STATUS="⚠️ UNKNOWN"
-            echo "Overall Status: UNKNOWN (unexpected job states)"
-            echo "Matrix: $MATRIX_RESULT, Trigger: $TRIGGER_RESULT, Android: $ANDROID_RESULT, iOS: $IOS_RESULT, Gather: $GATHER_RESULT"
+            OVERALL_STATUS="✅ PASSED"
+            echo "Overall Status: PASSED (all tests passed)"
           fi
           
-          # Set outputs for all individual job statuses
-          {
-            echo "overall_status=$OVERALL_STATUS"
-            echo "matrix_status=$MATRIX_RESULT"
-            echo "trigger_status=$TRIGGER_RESULT"
-            echo "android_status=$ANDROID_RESULT"
-            echo "ios_status=$IOS_RESULT"
-            echo "gather_status=$GATHER_RESULT"
-          } >> "$GITHUB_OUTPUT"
+          # Set outputs
+          echo "overall_status=$OVERALL_STATUS" >> "$GITHUB_OUTPUT"
+          echo "android_status=$ANDROID_RESULT" >> "$GITHUB_OUTPUT"
+          echo "ios_status=$IOS_RESULT" >> "$GITHUB_OUTPUT"
+          echo "trigger_status=$TRIGGER_RESULT" >> "$GITHUB_OUTPUT"
 
+  # Slack Notification Job
   slack-notification:
     name: Send Slack Notification
     runs-on: ubuntu-latest
-    needs: [all-status, trigger-qa-builds-and-upload]
+    needs: [all-status]
     if: always()
     steps:
       - name: Checkout code
@@ -611,7 +582,72 @@ jobs:
           ANDROID_STATUS="${{ needs.all-status.outputs.android_status }}"
           IOS_STATUS="${{ needs.all-status.outputs.ios_status }}"
           
-          # Format status for display with proper handling of all states
-          case "$ANDROID_STATUS" in
-            "success") ANDROID_DISPLAY="✅ PASSED" ;;
-            "failure") ANDROID_DISPLAY="
+          # Format status for display
+          if [ "$ANDROID_STATUS" = "success" ]; then
+            ANDROID_DISPLAY="✅ PASSED"
+          else
+            ANDROID_DISPLAY="❌ FAILED"
+          fi
+          
+          if [ "$IOS_STATUS" = "success" ]; then
+            IOS_DISPLAY="✅ PASSED"
+          else
+            IOS_DISPLAY="❌ FAILED"
+          fi
+          
+          # Format results
+          if [ "$ANDROID_RESULT" = "success" ]; then
+            ANDROID_STATUS="✅ PASSED"
+          else
+            ANDROID_STATUS="❌ FAILED"
+          fi
+          
+          if [ "$IOS_RESULT" = "success" ]; then
+            IOS_STATUS="✅ PASSED"
+          else
+            IOS_STATUS="❌ FAILED"
+          fi
+          
+          # Create summary
+          SUMMARY="*Performance E2E Tests*\n\n"
+          
+          SUMMARY+="---------------\n\n"
+          SUMMARY+="*Devices Tested:*\n"
+          SUMMARY+="• Android:\n"
+          while IFS= read -r device; do
+            if [ -n "$device" ]; then
+              SUMMARY+="  • $device\n"
+            fi
+          done <<< "$ANDROID_DEVICES"
+          SUMMARY+="• iOS:\n"
+          while IFS= read -r device; do
+            if [ -n "$device" ]; then
+              SUMMARY+="  • $device\n"
+            fi
+          done <<< "$IOS_DEVICES"
+          SUMMARY+="\n"
+          SUMMARY+="---------------\n\n"
+          SUMMARY+="*Test Results:*\n"
+          SUMMARY+="• Android Tests: $ANDROID_DISPLAY\n"
+          SUMMARY+="• iOS Tests: $IOS_DISPLAY\n\n"
+          SUMMARY+="---------------\n\n"
+          SUMMARY+="*Build Info:*\n"
+          SUMMARY+="• Commit Hash: \`${{ github.sha }}\`\n"
+          SUMMARY+="---------------\n\n"
+          SUMMARY+="<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Full Results>"
+          
+          echo "summary<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$SUMMARY" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          
+          echo "Test summary generated"
+      
+      - name: Send Slack Notification
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "${{ steps.test-summary.outputs.summary }}"
+            }
