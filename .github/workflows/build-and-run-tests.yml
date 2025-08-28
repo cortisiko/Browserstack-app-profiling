@@ -32,9 +32,9 @@ jobs:
           echo "Reading device matrix from wdio-mocha/device-matrix.json"
           
           # Extract Android devices
-          ANDROID_MATRIX=$(jq -r ".android_devices | map({name: .name, os_version: .os_version, category: .category}) | tojson" appwright/device-matrix.json)
+          ANDROID_MATRIX=$(jq -r ".android_devices | map({name: .name, os_version: .os_version, category: .category}) | tojson" wdio-mocha/device-matrix.json)
           # Extract iOS devices
-          IOS_MATRIX=$(jq -r ".ios_devices | map({name: .name, os_version: .os_version, category: .category}) | tojson" appwright/device-matrix.json)
+          IOS_MATRIX=$(jq -r ".ios_devices | map({name: .name, os_version: .os_version, category: .category}) | tojson" wdio-mocha/device-matrix.json)
           
           {
             echo "android=$ANDROID_MATRIX"
@@ -405,7 +405,7 @@ jobs:
           echo "QA App Version: ${{ needs.trigger-qa-builds-and-upload.outputs.android-version }}"
           echo "BrowserStack Android App URL: ${{ needs.trigger-qa-builds-and-upload.outputs.browserstack-android-url }}"
           
-          yarn run-appwright:android-bs
+          yarn run-wdio:android-bs
       
       - name: Upload Android Test Results
         uses: actions/upload-artifact@v4
@@ -500,7 +500,7 @@ jobs:
             echo "Warning: iOS ${{ matrix.device.os_version }} may not be supported by MetaMask app"
           fi
           
-          yarn run-appwright:ios-bs
+          yarn run-wdio:ios-bs
       
       - name: Upload iOS Test Results
         uses: actions/upload-artifact@v4
@@ -567,13 +567,67 @@ jobs:
   slack-notification:
     name: Send Slack Notification
     runs-on: ubuntu-latest
-    needs: [gather-results, trigger-qa-builds-and-upload]
+    needs: [read-device-matrix, trigger-qa-builds-and-upload,android-tests, ios-tests, gather-results]
     if: always()
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Generate Test Summary
+        id: test-summary
+        run: |
+          echo "Generating test summary..."
+          
+          # Get device matrix for device names
+          DEVICE_MATRIX=$(cat wdio-mocha/device-matrix.json)
+          
+          # Extract device information
+          ANDROID_DEVICES=$(echo "$DEVICE_MATRIX" | jq -r '.android_devices[] | "\(.name) (\(.os_version))"' | tr '\n' ', ' | sed 's/,$//')
+          IOS_DEVICES=$(echo "$DEVICE_MATRIX" | jq -r '.ios_devices[] | "\(.name) (\(.os_version))"' | tr '\n' ', ' | sed 's/,$//')
+          
+          # Get test results
+          ANDROID_RESULT="${{ needs.android-tests.result }}"
+          IOS_RESULT="${{ needs.ios-tests.result }}"
+          OVERALL_RESULT="${{ needs.gather-results.outputs.overall_status }}"
+          
+          # Format results
+          if [ "$ANDROID_RESULT" = "success" ]; then
+            ANDROID_STATUS="✅ PASSED"
+          else
+            ANDROID_STATUS="❌ FAILED"
+          fi
+          
+          if [ "$IOS_RESULT" = "success" ]; then
+            IOS_STATUS="✅ PASSED"
+          else
+            IOS_STATUS="❌ FAILED"
+          fi
+          
+          # Create summary
+          SUMMARY="*Performance E2E Tests: $OVERALL_RESULT*\n\n"
+          SUMMARY+="*Devices Tested:*\n"
+          SUMMARY+="• Android: $ANDROID_DEVICES\n"
+          SUMMARY+="• iOS: $IOS_DEVICES\n\n"
+          SUMMARY+="*Test Results:*\n"
+          SUMMARY+="• Android Tests: $ANDROID_STATUS\n"
+          SUMMARY+="• iOS Tests: $IOS_STATUS\n\n"
+          SUMMARY+="*QA Build Info:*\n"
+          SUMMARY+="• Android Version: ${{ needs.trigger-qa-builds-and-upload.outputs.android-version }}\n"
+          SUMMARY+="• iOS Version: ${{ needs.trigger-qa-builds-and-upload.outputs.ios-version }}\n\n"
+          SUMMARY+="<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Full Results>"
+          
+          echo "summary<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$SUMMARY" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          
+          echo "Test summary generated"
+      
       - name: Send Slack Notification
         uses: slackapi/slack-github-action@v2.1.1
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
-            text: "Performance E2E Tests: ${{ needs.gather-results.outputs.overall_status == 'success' && '✅ PASSED' || '❌ FAILED' }}\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            {
+              "text": "${{ steps.test-summary.outputs.summary }}"
+            }
