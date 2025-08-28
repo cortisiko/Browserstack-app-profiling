@@ -69,25 +69,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version: '20.18.1'
           cache: 'yarn'
       
       - name: Install dependencies
-        run: yarn setup
-      
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            .yarn/cache
-            .yarn/install-state.gz
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+        run: yarn install --frozen-lockfile
       
       - name: Trigger Bitrise QA Builds
         env:
@@ -338,27 +327,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Restore node_modules cache
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            .yarn/cache
-            .yarn/install-state.gz
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-      
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version: '20.18.1'
           cache: 'yarn'
       
-      - name: Install dependencies (if cache miss)
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn setup
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
       
       - name: BrowserStack Env Setup
         uses: browserstack/github-actions/setup-env@4478e16186f38e5be07721931642e65a028713c3
@@ -431,27 +407,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Restore node_modules cache
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            .yarn/cache
-            .yarn/install-state.gz
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-      
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version: '20.18.1'
           cache: 'yarn'
       
-      - name: Install dependencies (if cache miss)
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn setup
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
       
       - name: BrowserStack Env Setup
         uses: browserstack/github-actions/setup-env@4478e16186f38e5be07721931642e65a028713c3
@@ -582,8 +545,8 @@ jobs:
           DEVICE_MATRIX=$(cat wdio-mocha/device-matrix.json)
           
           # Extract device information
-          ANDROID_DEVICES=$(echo "$DEVICE_MATRIX" | jq -r '.android_devices[] | "\(.name) (\(.os_version))"' | tr '\n' ', ' | sed 's/,$//')
-          IOS_DEVICES=$(echo "$DEVICE_MATRIX" | jq -r '.ios_devices[] | "\(.name) (\(.os_version))"' | tr '\n' ', ' | sed 's/,$//')
+          ANDROID_DEVICES=$(echo "$DEVICE_MATRIX" | jq -r '.android_devices[] | "\(.name) (\(.os_version))"' | tr '\n' ' ' | sed 's/ $//')
+          IOS_DEVICES=$(echo "$DEVICE_MATRIX" | jq -r '.ios_devices[] | "\(.name) (\(.os_version))"' | tr '\n' ' ' | sed 's/ $//')
           
           # Get test results
           ANDROID_RESULT="${{ needs.android-tests.result }}"
@@ -611,9 +574,8 @@ jobs:
           SUMMARY+="*Test Results:*\n"
           SUMMARY+="• Android Tests: $ANDROID_STATUS\n"
           SUMMARY+="• iOS Tests: $IOS_STATUS\n\n"
-          SUMMARY+="*QA Build Info:*\n"
-          SUMMARY+="• Android Version: ${{ needs.trigger-qa-builds-and-upload.outputs.android-version }}\n"
-          SUMMARY+="• iOS Version: ${{ needs.trigger-qa-builds-and-upload.outputs.ios-version }}\n\n"
+          SUMMARY+="*Build Info:*\n"
+          SUMMARY+="• Commit: ${{ github.sha }}\n"
           SUMMARY+="<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Full Results>"
           
           echo "summary<<EOF" >> "$GITHUB_OUTPUT"
